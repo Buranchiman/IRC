@@ -9,15 +9,50 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <poll.h>
-
+#include "../includes/Client.hpp"
 void error(const char *msg)
 {
     perror(msg);
     exit(1);
 }
 
+std::string trim(const std::string &str)
+{
+     std::string result = str;
+     for (size_t i = 0; i < result.size(); i++)
+     {
+          if (result[i] == '\n')
+               result[i] = '\0';
+     }
+     return (result);
+}
+void writeOnTerm(int fd,char *message, pollfd *fds, Client *client)
+{
+	(void)client;
+	int fdsend = 0;
+     std::string username;
+	for (int i = 1; fds[i].fd != -2; i++)
+	{
+		if(fds[i].fd == fd)
+		 fdsend = i;
+	}
+	
+	for(int i = 1; fds[i].fd != -2; i++)
+	{
+		if(fds[i].fd != fd)
+		{
+        username = trim(client[fdsend].getUserName());
+        write(fds[i].fd, username.c_str(), username.size());
+		write(fds[i].fd, " :", 2);
+		write(fds[i].fd,message,strlen(message));
+		std::cout << message << std::endl;
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
+
      int sockfd, portno;
      socklen_t clilen;
      char buffer[256];
@@ -25,6 +60,7 @@ int main(int argc, char *argv[])
      struct pollfd *fds = new struct pollfd[5]; //reflechir a comment rendre la taille dynamique ??
      int n, nfds;
      nfds = 1;
+	 Client client[6];
      for (int i = 0; i < 5; i++)
      {
           fds[i].fd = -2;
@@ -49,6 +85,7 @@ int main(int argc, char *argv[])
               error("ERROR on binding");
      listen(sockfd,5); //changer pour la macro maximum de listen.h ?
      clilen = sizeof(cli_addr);
+
 	while (1)
 	{
           // for (int i = 0; i < nfds; i++)
@@ -73,14 +110,17 @@ int main(int argc, char *argv[])
           //std::cout << nfds << std::endl;
           if (poll(fds, nfds, 100) > 0) //faire une gestion pour -1 et errno plus tard
           {
-               if (fds[0].revents)
+               if (fds[0].revents && nfds <= 5)
                {
-                    int tmp;
-                    tmp = accept(sockfd,
+                    fds[nfds].fd = accept(sockfd,
                          (struct sockaddr *) &cli_addr,
-                         &clilen);
-                    fds[nfds].fd = tmp;
+                         &clilen);;
+					n = write(fds[nfds].fd,"username :",10);
+					n = read(fds[nfds].fd, buffer,255);
+					client[nfds].setUserName(buffer);
+					std::cout << client[nfds].getUserName() << std::endl;
                     nfds ++;
+
                }
                for (int i = 1; i < nfds; i++)
                {
@@ -88,8 +128,10 @@ int main(int argc, char *argv[])
                     {
                          n = read(fds[i].fd, buffer,255);
                          if (n < 0) error("ERROR reading from socket");
-                         printf("Here is the message: %s\n",buffer);
-                         n = write(fds[i].fd,"I got your message",18);
+						 std::cout << fds[i].fd << client[i].getUserName() << " message :" << buffer << std::endl;
+						 writeOnTerm(fds[i].fd, buffer, fds, client);
+                         n = write(fds[i].fd,"message send\n",13);
+						 bzero(buffer, 256);
                          // fds[i].revents = 0;
                     }
                }
