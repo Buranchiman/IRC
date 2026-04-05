@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: luciendacunha <luciendacunha@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/04/01 18:59:47 by luda-cun         ###   ########.fr       */
+/*   Updated: 2026/04/05 16:41:47 by luciendacun      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,22 @@ Client::Client(): userName_(""), fdSocket_(0)
 {
 	std::cout << "Constructor Client" << std::endl;
 }
+
+Client::Client(const Client &other)
+{
+	*this = other;
+}
+
+Client &Client::operator=(const Client &other)
+{
+	if (this != &other)
+	{
+		this->userName_ = other.userName_;
+		this->fdSocket_ = other.fdSocket_;
+	}
+	return (*this);
+}
+
 Client::~Client()
 {
 	std::cout << "destructor Client" << std::endl;
@@ -28,9 +44,21 @@ void Client::setFdSocket(int fd)
 	this->fdSocket_ = fd;
 }
 
-void Client::setUserName(char *username)
+void Client::setUserName(const char *username)
 {
 	this->userName_ = username;
+}
+
+void Client::reset()
+{
+	this->fdSocket_ = -1;
+	this->userName_.clear();
+}
+
+void Client::initialize(int fdSocket, const char *userName)
+{
+	this->fdSocket_ = fdSocket;
+	this->userName_ = userName;
 }
 //getter
 
@@ -42,6 +70,24 @@ int Client::getFdSocket() const
 std::string Client::getUserName()
 {
 	return (this->userName_);
+}
+
+Client	**Client::createPool(int maxClients)
+{
+	Client **clients = new Client*[maxClients + 1];
+	for (int i = 0; i <= maxClients; i++)
+		clients[i] = NULL;
+	return (clients);
+}
+
+void	Client::destroyPool(Client **clients, int maxClients)
+{
+	for (int i = 0; i <= maxClients; i++)
+	{
+		if (clients[i])
+			delete clients[i];
+	}
+	delete[] clients;
 }
 // #include <stdio.h>
 // #include <stdlib.h>
