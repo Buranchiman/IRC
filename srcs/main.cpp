@@ -27,28 +27,30 @@ std::string trim(const std::string &str)
      }
      return (result);
 }
-void writeOnTerm(int fd,char *message, pollfd *fds, Client **client)
+void writeOnTerm(int fd,char *message, pollfd *fds, std::vector<Client> &client)
 {
 	int fdsend = 0;
      std::string username;
-     if (!client)
-          return ;
-	for (int i = 1; fds[i].fd != -2; i++)
+     if (client.empty())
+          return;
+	for (int i = 0; fds[i].fd != -2; i++)
 	{
 		if(fds[i].fd == fd)
-		 fdsend = i;
+		 fdsend = i;           //a verifier pourquoi fdsend = i et pas i - 1 alors que normalement il y a un client de moins que de fds
 	}
 	
 	for(int i = 1; fds[i].fd != -2; i++)
 	{
-          if (!client[fdsend])
-               continue;
+          //  if (!client[fdsend].empty())
+          //       continue;
           if(fds[i].fd != fd)
           {
-               username = trim(client[fdsend]->getUserName());
+               username = trim(client[fdsend].getUserName());
+               std::cout << "local username is " << username << std::endl;
                write(fds[i].fd, username.c_str(), username.size());
                write(fds[i].fd, " :", 2);
                write(fds[i].fd, message, strlen(message));
+               // std::cout<< username << " :" ;
                std::cout << message << std::endl;
           }
 	}
@@ -97,7 +99,7 @@ int main(int argc, char *argv[])
           //std::cout << client.size() + 1 << std::endl;
           if (poll(fds, client.size() + 1, 100) > 0) //faire une gestion pour -1 et errno plus tard
           {
-               if (fds[0].revents && client.size + 1 <= maxClients)
+               if (fds[0].revents && client.size() + 1 <= maxClients)
                {
                     fds[client.size() + 1].fd = accept(sockfd,
                          (struct sockaddr *) &cli_addr,
@@ -110,13 +112,12 @@ int main(int argc, char *argv[])
                                    buffer[n] = '\0';
                               // if (client[client.size + 1])
                               //      delete client[client.size() + 1];
-                              client.push_back(new Client());
-                              client.last().initialize(fds[client.size()].fd, buffer);
-                              std::cout << client.last().getUserName() << std::endl;
+                              client.push_back(Client());
+                              client.end()->initialize(fds[client.size()].fd, buffer);
+                              std::cout << client.end()->getUserName() << std::endl;
                          }
-
                }
-               for (int i = 1; i < client.size() + 1; i++)
+               for (unsigned long i = 1; i < client.size() + 1; i++)
                {
                     if (fds[i].revents == POLLIN && fds[i].fd != -2)
                     {
@@ -124,8 +125,8 @@ int main(int argc, char *argv[])
                          if (n < 0) error("ERROR reading from socket");
                      if (n > 0)
                          buffer[n] = '\0';
-                     if (client[i])
-                          std::cout << fds[i].fd << client[i]->getUserName() << " message :" << buffer << std::endl;
+                    //  if (!client[i].empty())
+                    std::cout << fds[i].fd << client[i].getUserName() << " message :" << buffer << std::endl;
                      writeOnTerm(fds[i].fd, buffer, fds, client);
 					 n = write(fds[i].fd,"[message send]\n", 15);
 						 bzero(buffer, 256);
@@ -134,6 +135,5 @@ int main(int argc, char *argv[])
                }
           }
 	}
-      Client::destroyPool(client, maxClients);
      return 0;
 }
