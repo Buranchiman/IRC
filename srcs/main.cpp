@@ -60,25 +60,22 @@ int main(int argc, char *argv[])
      int sockfd;
      char buffer[256];
      struct pollfd *fds;
-     int n, nfds;
-     nfds = 1;
-	 Client **client;
+     int n;
+     std::vector<Client> client;
+	//Client **client;
      if (argc < 2) {
          fprintf(stderr,"ERROR, no port provided\n");
          exit(1);
      }
-      Serveur serveur(atoi(argv[1]), maxClients);
+     Serveur serveur(atoi(argv[1]), maxClients);
      serveur.initialize();
      sockfd = serveur.getSockFd();
      fds = serveur.getFds();
-	 client = Client::createPool(maxClients);
-
 	socklen_t &clilen = serveur.getCliLen();
 	struct sockaddr_in &cli_addr = serveur.getCliAddr();
-
 	while (1)
 	{
-          // for (int i = 0; i < nfds; i++)
+          // for (int i = 0; i < client.size() + 1; i++)
           // {
           //      if (fds[i].fd == -2)
           //      {
@@ -89,7 +86,7 @@ int main(int argc, char *argv[])
           //           if (tmp != -1)
           //                fds[i].fd = tmp;
           //           if (fds[i].fd != -2)
-          //                nfds ++;
+          //                client.size() + 1 ++;
           //           break;
           //      }
           // }
@@ -97,30 +94,29 @@ int main(int argc, char *argv[])
           // if (newsockfd < 0)
           //      error("ERROR on accept");
           bzero(buffer,256);
-          //std::cout << nfds << std::endl;
-          if (poll(fds, nfds, 100) > 0) //faire une gestion pour -1 et errno plus tard
+          //std::cout << client.size() + 1 << std::endl;
+          if (poll(fds, client.size() + 1, 100) > 0) //faire une gestion pour -1 et errno plus tard
           {
-               if (fds[0].revents && nfds <= maxClients)
+               if (fds[0].revents && client.size + 1 <= maxClients)
                {
-                    fds[nfds].fd = accept(sockfd,
+                    fds[client.size() + 1].fd = accept(sockfd,
                          (struct sockaddr *) &cli_addr,
                          &clilen);;
-                         if (fds[nfds].fd >= 0)
+                         if (fds[client.size() + 1].fd >= 0)
                          {
-                              n = write(fds[nfds].fd,"username :",10);
-                              n = read(fds[nfds].fd, buffer,255);
+                              n = write(fds[client.size() + 1].fd,"username :",10);
+                              n = read(fds[client.size() + 1].fd, buffer,255);
                               if (n > 0)
                                    buffer[n] = '\0';
-                              if (client[nfds])
-                                   delete client[nfds];
-                              client[nfds] = new Client();
-                              client[nfds]->initialize(fds[nfds].fd, buffer);
-                              std::cout << client[nfds]->getUserName() << std::endl;
-                              nfds ++;
+                              // if (client[client.size + 1])
+                              //      delete client[client.size() + 1];
+                              client.push_back(new Client());
+                              client.last().initialize(fds[client.size()].fd, buffer);
+                              std::cout << client.last().getUserName() << std::endl;
                          }
 
                }
-               for (int i = 1; i < nfds; i++)
+               for (int i = 1; i < client.size() + 1; i++)
                {
                     if (fds[i].revents == POLLIN && fds[i].fd != -2)
                     {
@@ -131,7 +127,7 @@ int main(int argc, char *argv[])
                      if (client[i])
                           std::cout << fds[i].fd << client[i]->getUserName() << " message :" << buffer << std::endl;
                      writeOnTerm(fds[i].fd, buffer, fds, client);
-					 n = write(fds[i].fd,"[message send]\n",14);
+					 n = write(fds[i].fd,"[message send]\n", 15);
 						 bzero(buffer, 256);
                          // fds[i].revents = 0;
                     }

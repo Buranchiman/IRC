@@ -14,6 +14,7 @@
 
 #include <poll.h>
 #include <netinet/in.h>
+#include <vector>
 
 class Serveur
 {
