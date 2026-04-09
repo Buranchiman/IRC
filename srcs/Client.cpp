@@ -6,14 +6,23 @@
 /*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/04/09 16:10:28 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/04/09 17:57:22 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "../includes/Client.hpp"
 
-Client::Client(): userName_(""), fdSocket_(0)
+void trim(std::string &str)
+{
+     for (size_t i = 0; i < str.size(); i++)
+     {
+          if (str[i] == '\n')
+               str[i] = '\0';
+     }
+}
+
+Client::Client(): userName_(""), hasUsername(false), fdSocket_(0)
 {
 	std::cout << "Constructor Client" << std::endl;
 }
@@ -59,6 +68,7 @@ void Client::initialize(int fdSocket, const char *userName)
 {
 	this->fdSocket_ = fdSocket;
 	this->userName_ = userName;
+	trim(this->userName_);
 }
 //getter
 

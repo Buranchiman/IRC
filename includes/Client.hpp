@@ -8,6 +8,7 @@ private:
 	std::string userName_;
 	// std::string nickName_;
 	// std::string passWord_;
+	bool		hasUsername;
 	int fdSocket_;
 public:
 	Client();
@@ -29,3 +30,4 @@ public:
 
 };
 
+void trim(std::string &str);
