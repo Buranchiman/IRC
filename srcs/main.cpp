@@ -38,14 +38,14 @@ void writeOnTerm(int fd,char *message, pollfd *fds, std::vector<Client> &client)
 		if(fds[i].fd == fd)
 		 fdsend = i;           //a verifier pourquoi fdsend = i et pas i - 1 alors que normalement il y a un client de moins que de fds
 	}
-	
+
 	for(int i = 1; fds[i].fd != -2; i++)
 	{
           //  if (!client[fdsend].empty())
           //       continue;
           if(fds[i].fd != fd)
           {
-               username = trim(client[fdsend].getUserName());
+               username = trim(client[fdsend - 1].getUserName());
                std::cout << "local username is " << username << std::endl;
                write(fds[i].fd, username.c_str(), username.size());
                write(fds[i].fd, " :", 2);
@@ -113,8 +113,10 @@ int main(int argc, char *argv[])
                               // if (client[client.size + 1])
                               //      delete client[client.size() + 1];
                               client.push_back(Client());
-                              client.end()->initialize(fds[client.size()].fd, buffer);
-                              std::cout << client.end()->getUserName() << std::endl;
+                              client.back().initialize(fds[client.size()].fd, buffer);
+                              std::cout << client.back().getUserName() << std::endl;
+                              fds[client.size() + 1].revents = 0;
+                              bzero(buffer, 256);
                          }
                }
                for (unsigned long i = 1; i < client.size() + 1; i++)
@@ -122,12 +124,13 @@ int main(int argc, char *argv[])
                     if (fds[i].revents == POLLIN && fds[i].fd != -2)
                     {
                          n = read(fds[i].fd, buffer,255);
-                         if (n < 0) error("ERROR reading from socket");
-                     if (n > 0)
-                         buffer[n] = '\0';
-                    //  if (!client[i].empty())
-                    std::cout << fds[i].fd << client[i].getUserName() << " message :" << buffer << std::endl;
-                     writeOnTerm(fds[i].fd, buffer, fds, client);
+                         if (n < 0)
+                              error("ERROR reading from socket");
+                         if (n > 0)
+                              buffer[n] = '\0';
+                         //  if (!client[i].empty())
+                         std::cout << fds[i].fd << client[i - 1].getUserName() << " message :" << buffer << std::endl;
+                         writeOnTerm(fds[i].fd, buffer, fds, client);
 					 n = write(fds[i].fd,"[message send]\n", 15);
 						 bzero(buffer, 256);
                          // fds[i].revents = 0;

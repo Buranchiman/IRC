@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luciendacunha <luciendacunha@student.42    +#+  +:+       +#+        */
+/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/04/05 16:41:47 by luciendacun      ###   ########.fr       */
+/*   Updated: 2026/04/09 16:10:28 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
