@@ -6,7 +6,7 @@
 /*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/04/09 17:57:22 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/04/13 16:58:24 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void trim(std::string &str)
      }
 }
 
-Client::Client(): userName_(""), hasUsername(false), fdSocket_(0)
+Client::Client(): userName_(""), hasUsername(false), fdSocket_(0), pendingInput("")
 {
 	std::cout << "Constructor Client" << std::endl;
 }
@@ -38,6 +38,7 @@ Client &Client::operator=(const Client &other)
 	{
 		this->userName_ = other.userName_;
 		this->fdSocket_ = other.fdSocket_;
+		this->hasUsername = other.hasUsername;
 	}
 	return (*this);
 }
@@ -53,9 +54,14 @@ void Client::setFdSocket(int fd)
 	this->fdSocket_ = fd;
 }
 
-void Client::setUserName(const char *username)
+void Client::setUserName(std::string username)
 {
 	this->userName_ = username;
+}
+
+void Client::setReading(bool opt)
+{
+	this->hasUsername = opt;
 }
 
 void Client::reset()
@@ -64,12 +70,13 @@ void Client::reset()
 	this->userName_.clear();
 }
 
-void Client::initialize(int fdSocket, const char *userName)
-{
-	this->fdSocket_ = fdSocket;
-	this->userName_ = userName;
-	trim(this->userName_);
-}
+// void Client::initialize(int fdSocket, const char *userName)
+// {
+// 	this->fdSocket_ = fdSocket;
+// 	this->userName_ = userName;
+// 	this->hasUsername = true;
+// 	trim(this->userName_);
+// }
 //getter
 
 int Client::getFdSocket() const
@@ -80,6 +87,11 @@ int Client::getFdSocket() const
 std::string Client::getUserName()
 {
 	return (this->userName_);
+}
+
+bool Client::getNameStatus() const
+{
+	return (this->hasUsername);
 }
 
 Client	**Client::createPool(int maxClients)
