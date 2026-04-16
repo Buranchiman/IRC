@@ -49,94 +49,6 @@ void writeOnTerm(int fd, std::string message, pollfd *fds, std::vector<Client> &
 	}
 }
 
-// int main(int argc, char *argv[])
-// {
-// 	 const int maxClients = 5;
-//      int sockfd;
-//      char buffer[256];
-//      struct pollfd *fds;
-//      int n;
-//      std::vector<Client> client;
-// 	//Client **client;
-//      if (argc < 2) {
-//          fprintf(stderr,"ERROR, no port provided\n");
-//          exit(1);
-//      }
-//      Serveur serveur(atoi(argv[1]), maxClients);
-//      serveur.initialize();
-//      sockfd = serveur.getSockFd();
-//      fds = serveur.getFds();
-// 	socklen_t &clilen = serveur.getCliLen();
-// 	struct sockaddr_in &cli_addr = serveur.getCliAddr();
-// 	while (1)
-// 	{
-//           // for (int i = 0; i < client.size() + 1; i++)
-//           // {
-//           //      if (fds[i].fd == -2)
-//           //      {
-//           //           int tmp;
-//           //           tmp = accept(sockfd,
-//           //             (struct sockaddr *) &cli_addr,
-//           //             &clilen);
-//           //           if (tmp != -1)
-//           //                fds[i].fd = tmp;
-//           //           if (fds[i].fd != -2)
-//           //                client.size() + 1 ++;
-//           //           break;
-//           //      }
-//           // }
-//           // std::cout << "newsockfd is " << newsockfd << std::endl;
-//           // if (newsockfd < 0)
-//           //      error("ERROR on accept");
-//           bzero(buffer,256);
-//           size_t tmp;
-//           //std::cout << client.size() + 1 << std::endl;
-//           if (poll(fds, client.size() + 1, 100) > 0) //faire une gestion pour -1 et errno plus tard
-//           {
-//                tmp = client.size();
-//                if ((fds[0].revents & POLLIN) && client.size() + 1 <= maxClients)
-//                {
-//                     fds[client.size() + 1].fd = accept(sockfd,
-//                          (struct sockaddr *) &cli_addr,
-//                          &clilen);;
-//                          if (fds[client.size() + 1].fd >= 0)
-//                          {
-//                               n = write(fds[client.size() + 1].fd,"username :",10);
-//                               n = read(fds[client.size() + 1].fd, buffer,255);
-//                               if (n > 0)
-//                                    buffer[n] = '\0';
-//                               // if (client[client.size + 1])
-//                               //      delete client[client.size() + 1];
-//                               client.push_back(Client());
-//                               client.back().initialize(fds[client.size()].fd, buffer);
-//                               std::cout << client.back().getUserName() << std::endl;
-//                               bzero(buffer, 256);
-//                          }
-//                }
-//                for (unsigned long i = 1; i < tmp + 1; i++)
-//                {
-//                     if ((fds[i].revents & POLLIN) && fds[i].fd != -2 && client[i - 1].getNameStatus() == false)
-//                     {
-//                          n = read(fds[i].fd, buffer,255);
-//                          std::cout << "fd that is reading is " << i << "and its reading status is " << client[i - 1].getNameStatus() << " and number of clients is " << tmp << std::endl;
-//                          if (n < 0)
-//                               error("ERROR reading from socket");
-//                          if (n > 0)
-//                               buffer[n] = '\0';
-//                     //  if (!client[i].empty())
-//                          std::cout << fds[i].fd << client[i - 1].getUserName() << " message :" << buffer << std::endl;
-//                          writeOnTerm(fds[i].fd, buffer, fds, client);
-// 					n = write(fds[i].fd,"[message send]\n", 15);
-// 						 bzero(buffer, 256);
-//                          // fds[i].revents = 0;
-//                     }
-//                     client[i - 1].setReading(false);
-//                }
-//           }
-// 	}
-//      return 0;
-// }
-
 int main(int argc, char *argv[])
 {
 	 const int maxClients = 5;
@@ -171,14 +83,10 @@ int main(int argc, char *argv[])
                          if (fds[client.size() + 1].fd >= 0)
                          {
                               n = write(fds[client.size() + 1].fd,"username :",10);
-                              // if (n > 0)
-                              //      buffer[n] = '\0';
                               // if (client[client.size + 1])
                               //      delete client[client.size() + 1];
                               client.push_back(Client());
-                              client.back().setFdSocket(fds[client.size()].fd);
-                              // std::cout << client.back().getUserName() << std::endl;
-                              // bzero(buffer, 256);
+                              client.back().setFdSocket(fds[client.size()].fd); //on cree le premier client vide
                          }
                }
                for (unsigned long i = 1; i < client.size() + 1; i++)
@@ -188,41 +96,25 @@ int main(int argc, char *argv[])
                          n = read(fds[i].fd, buffer,255);
                          if (n < 0)
                               error("ERROR reading from socket");
-                         // if (n > 0)
-                         //      buffer[n] = '\0';
-                         // std::string s(buffer, n);
+
                          client[i - 1].accessBuffer() += std::string(buffer, n);
                          std::cout << "pending input is " << client[i - 1].getInput() << std::endl;
-                    //  if (!client[i].empty())
-                         // if (client[i - 1].getNameStatus() == false)
-                         // {
-                         //      trim(s);
-                         //      client[i - 1].setUserName(s);
-                         //      client[i - 1].setReading(true);
-                         // }
-                         // else
-                         // {
-                         //      std::cout << fds[i].fd << client[i - 1].getUserName() << " message :" << s << std::endl;
-                         //      writeOnTerm(fds[i].fd, s, fds, client);
-					//      n = write(fds[i].fd,"[message send]\n", 15);
-					//      bzero(buffer, 256);
-                         // }
                          size_t pos;
-                         while ((pos = client[i - 1].getInput().find('\n')) != std::string::npos)
+                         while ((pos = client[i - 1].getInput().find('\n')) != std::string::npos) // tant qu'il y a un \n dans le read
                          {
-                             std::string line = client[i - 1].getInput().substr(0, pos);
+                             std::string line = client[i - 1].getInput().substr(0, pos); //line == la ligne jusqu'au _n
                              client[i - 1].getInput().erase(0, pos + 1);
                              trim(line);
-                             if (client[i - 1].getNameStatus() == false)
+                             if (client[i - 1].getNameStatus() == false) // si le client a pas de nom on remplit
                              {
                                  client[i - 1].setUserName(line);
                                  client[i - 1].setReading(true);
                              }
-                             else
+                             else //sinon on ecrit
                              {
                                  writeOnTerm(fds[i].fd, line, fds, client);
                              }
-                             client[i - 1].accessBuffer().erase(0, pos + 1);
+                             client[i - 1].accessBuffer().erase(0, pos + 1); // puis on enleve ce qu'on a ecrit/mis en username
                          }
                     }
                }
