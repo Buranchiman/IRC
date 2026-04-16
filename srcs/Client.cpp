@@ -6,23 +6,23 @@
 /*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/04/13 16:58:24 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/04/16 15:52:01 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "../includes/Client.hpp"
 
-void trim(std::string &str)
+void trim(std::string &s)
 {
-     for (size_t i = 0; i < str.size(); i++)
-     {
-          if (str[i] == '\n')
-               str[i] = '\0';
-     }
+    for (size_t i = 0; i < s.size(); i++)
+    {
+       	while (!s.empty() && (s[s.size() - 1] == '\n' || s[s.size() - 1] == '\r'))
+       		s.erase(s.size() - 1);
+    }
 }
 
-Client::Client(): userName_(""), hasUsername(false), fdSocket_(0), pendingInput("")
+Client::Client(): userName_(""), pendingInput(""), hasUsername(false), fdSocket_(0)
 {
 	std::cout << "Constructor Client" << std::endl;
 }
@@ -84,7 +84,7 @@ int Client::getFdSocket() const
 	return (this->fdSocket_);
 }
 
-std::string Client::getUserName()
+std::string Client::getUserName() const
 {
 	return (this->userName_);
 }
@@ -92,6 +92,16 @@ std::string Client::getUserName()
 bool Client::getNameStatus() const
 {
 	return (this->hasUsername);
+}
+
+std::string Client::getInput() const
+{
+	return (this->pendingInput);
+}
+
+std::string &Client::accessBuffer()
+{
+	return (pendingInput);
 }
 
 Client	**Client::createPool(int maxClients)

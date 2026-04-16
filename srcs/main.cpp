@@ -171,8 +171,8 @@ int main(int argc, char *argv[])
                          if (fds[client.size() + 1].fd >= 0)
                          {
                               n = write(fds[client.size() + 1].fd,"username :",10);
-                              if (n > 0)
-                                   buffer[n] = '\0';
+                              // if (n > 0)
+                              //      buffer[n] = '\0';
                               // if (client[client.size + 1])
                               //      delete client[client.size() + 1];
                               client.push_back(Client());
@@ -191,20 +191,38 @@ int main(int argc, char *argv[])
                          // if (n > 0)
                          //      buffer[n] = '\0';
                          // std::string s(buffer, n);
-                         client[i - 1].pendingInput +=
+                         client[i - 1].accessBuffer() += std::string(buffer, n);
+                         std::cout << "pending input is " << client[i - 1].getInput() << std::endl;
                     //  if (!client[i].empty())
-                         if (client[i - 1].getNameStatus() == false)
+                         // if (client[i - 1].getNameStatus() == false)
+                         // {
+                         //      trim(s);
+                         //      client[i - 1].setUserName(s);
+                         //      client[i - 1].setReading(true);
+                         // }
+                         // else
+                         // {
+                         //      std::cout << fds[i].fd << client[i - 1].getUserName() << " message :" << s << std::endl;
+                         //      writeOnTerm(fds[i].fd, s, fds, client);
+					//      n = write(fds[i].fd,"[message send]\n", 15);
+					//      bzero(buffer, 256);
+                         // }
+                         size_t pos;
+                         while ((pos = client[i - 1].getInput().find('\n')) != std::string::npos)
                          {
-                              trim(s);
-                              client[i - 1].setUserName(s);
-                              client[i - 1].setReading(true);
-                         }
-                         else
-                         {
-                              std::cout << fds[i].fd << client[i - 1].getUserName() << " message :" << s << std::endl;
-                              writeOnTerm(fds[i].fd, s, fds, client);
-					     n = write(fds[i].fd,"[message send]\n", 15);
-					     bzero(buffer, 256);
+                             std::string line = client[i - 1].getInput().substr(0, pos);
+                             client[i - 1].getInput().erase(0, pos + 1);
+                             trim(line);
+                             if (client[i - 1].getNameStatus() == false)
+                             {
+                                 client[i - 1].setUserName(line);
+                                 client[i - 1].setReading(true);
+                             }
+                             else
+                             {
+                                 writeOnTerm(fds[i].fd, line, fds, client);
+                             }
+                             client[i - 1].accessBuffer().erase(0, pos + 1);
                          }
                     }
                }

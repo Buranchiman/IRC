@@ -24,10 +24,12 @@ public:
 	void reset();
 	void initialize(int fdSocket, const char *userName);
 	//getter
-	std::string getUserName();
+	std::string getUserName() const;
 	int getFdSocket() const;
 	bool getNameStatus() const;
+	std::string getInput() const;
 
+	std::string	&accessBuffer();
 	static Client	**createPool(int maxClients);
 	static void		destroyPool(Client **clients, int maxClients);
 
