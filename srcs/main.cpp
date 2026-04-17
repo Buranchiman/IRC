@@ -18,36 +18,32 @@ void error(const char *msg)
     exit(1);
 }
 
-void writeOnTerm(int fd, std::string message, pollfd *fds, std::vector<Client> &client)
-{
-	int fdsend = 0;
-     std::string username;
-     if (client.empty())
-          return;
-	for (int i = 0; fds[i].fd != -2; i++)
-	{
-		if(fds[i].fd == fd)
-		 fdsend = i;           //a verifier pourquoi fdsend = i et pas i - 1 alors que normalement il y a un client de moins que de fds
-	}
+// void writeOnTerm(int fd, std::string message, pollfd *fds, std::vector<Client> &client)
+// {
+// 	int fdsend = 0;
+//      std::string username;
+//      if (client.empty())
+//           return;
+// 	for (int i = 0; fds[i].fd != -2; i++)
+// 	{
+// 		if(fds[i].fd == fd)
+// 		 fdsend = i;           //a verifier pourquoi fdsend = i et pas i - 1 alors que normalement il y a un client de moins que de fds
+// 	}
 
-	for(int i = 1; fds[i].fd != -2; i++)
-	{
-          //  if (!client[fdsend].empty())
-          //       continue;
-          if(fds[i].fd != fd)
-          {
-               std::string username = client[fdsend - 1].getUserName();
-               std::cout << "local username is " << username << std::endl;
-               // write(fds[i].fd, username.c_str(), username.size());
-               // write(fds[i].fd, " :", 2);
-               // write(fds[i].fd, message, strlen(message));
-               std::string out = username + " :" + std::string(message) + "\n";
-               write(fds[i].fd, out.c_str(), out.size());
-               // std::cout<< username << " :" ;
-               std::cout << out << std::endl;
-          }
-	}
-}
+// 	for(int i = 1; fds[i].fd != -2; i++)
+// 	{
+//           //  if (!client[fdsend].empty())
+//           //       continue;
+//           if(fds[i].fd != fd)
+//           {
+//                std::string username = client[fdsend - 1].getUserName();
+//                std::cout << "local username is " << username << std::endl;
+//                std::string out = username + " :" + std::string(message) + "\n";
+//                write(fds[i].fd, out.c_str(), out.size());
+//                std::cout << out << std::endl;
+//           }
+// 	}
+// }
 
 int main(int argc, char *argv[])
 {
@@ -57,6 +53,7 @@ int main(int argc, char *argv[])
      struct pollfd *fds;
      int n;
      std::vector<Client> client;
+     Channel channel("test", "Just a test channel");
 	//Client **client;
      if (argc < 2) {
          fprintf(stderr,"ERROR, no port provided\n");
@@ -85,8 +82,11 @@ int main(int argc, char *argv[])
                               n = write(fds[client.size() + 1].fd,"username :",10);
                               // if (client[client.size + 1])
                               //      delete client[client.size() + 1];
-                              client.push_back(Client());
-                              client.back().setFdSocket(fds[client.size()].fd); //on cree le premier client vide
+                              client.push_back(Client()); //on cree le premier client vide
+                              client.back().setFdSocket(fds[client.size()].fd); //on lui assigne le fd
+                              channel.join(client.back()); //channel par defaut pour l'instant
+                              if (client.back().getChannel() == NULL)
+                                   std::cout << "client has no channel at creation" << std::endl;
                          }
                }
                for (unsigned long i = 1; i < client.size() + 1; i++)
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
                              }
                              else //sinon on ecrit
                              {
-                                 writeOnTerm(fds[i].fd, line, fds, client);
+                                 client[i - 1].writeOnTerm(line);
                              }
                              client[i - 1].accessBuffer().erase(0, pos + 1); // puis on enleve ce qu'on a ecrit/mis en username
                          }
