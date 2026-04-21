@@ -18,45 +18,24 @@ void error(const char *msg)
     exit(1);
 }
 
-// void writeOnTerm(int fd, std::string message, pollfd *fds, std::vector<Client> &client)
+// void handleSigint(int sig)
 // {
-// 	int fdsend = 0;
-//      std::string username;
-//      if (client.empty())
-//           return;
-// 	for (int i = 0; fds[i].fd != -2; i++)
-// 	{
-// 		if(fds[i].fd == fd)
-// 		 fdsend = i;           //a verifier pourquoi fdsend = i et pas i - 1 alors que normalement il y a un client de moins que de fds
-// 	}
+//      (void)sig;
 
-// 	for(int i = 1; fds[i].fd != -2; i++)
-// 	{
-//           //  if (!client[fdsend].empty())
-//           //       continue;
-//           if(fds[i].fd != fd)
-//           {
-//                std::string username = client[fdsend - 1].getUserName();
-//                std::cout << "local username is " << username << std::endl;
-//                std::string out = username + " :" + std::string(message) + "\n";
-//                write(fds[i].fd, out.c_str(), out.size());
-//                std::cout << out << std::endl;
-//           }
-// 	}
 // }
 
 int main(int argc, char *argv[])
 {
-	 const int maxClients = 5;
+	const int maxClients = 5;
      int sockfd;
      char buffer[256];
      struct pollfd *fds;
      int n;
+     // sig_atomic_t signalReceived = 0;
      std::vector<Client> client;
      std::vector<Channel> channels;
      channels.push_back(Channel("test", "Just a test channel"));
      channels.push_back(Channel("students", "a channel dedicated to exchanging between students"));
-	//Client **client;
      if (argc < 2) {
          fprintf(stderr,"ERROR, no port provided\n");
          exit(1);
@@ -67,6 +46,7 @@ int main(int argc, char *argv[])
      fds = serveur.getFds();
 	socklen_t &clilen = serveur.getCliLen();
 	struct sockaddr_in &cli_addr = serveur.getCliAddr();
+     // signal(SIGINT, )
 	while (1)
 	{
           bzero(buffer,256);
@@ -95,8 +75,14 @@ int main(int argc, char *argv[])
                     {
                          n = read(fds[i].fd, buffer,255);
                          if (n < 0)
+                         {
                               error("ERROR reading from socket");
-
+                         }
+                         if (n == 0)
+                         {
+                              //detruire le client et voir comment gerer le fd
+                              continue;
+                         }
                          client[i - 1].accessBuffer() += std::string(buffer, n);
                          std::cout << "pending input is " << client[i - 1].getInput() << std::endl;
                          size_t pos;
@@ -112,7 +98,8 @@ int main(int argc, char *argv[])
                              }
                              else //sinon on ecrit
                              {
-                                 client[i - 1].writeOnTerm(line);
+                                   if (!line.empty())
+                                        client[i - 1].writeOnTerm(line);
                              }
                              client[i - 1].accessBuffer().erase(0, pos + 1); // puis on enleve ce qu'on a ecrit/mis en username
                          }

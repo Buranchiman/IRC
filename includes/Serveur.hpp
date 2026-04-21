@@ -15,6 +15,7 @@
 #include <poll.h>
 #include <netinet/in.h>
 #include <vector>
+#include <signal.h>
 
 class Serveur
 {
