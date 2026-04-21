@@ -13,8 +13,8 @@ private:
 	std::string name_;
 	std::string topic_;
 	std::string password_;
-	bool		topicRestriction_;
-	bool		inviteOnly_;
+	// bool		topicRestriction_;
+	// bool		inviteOnly_;
 	std::vector<Client *> clients_;
 	std::vector<Client *> operators_;
 public:

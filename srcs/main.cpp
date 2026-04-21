@@ -53,7 +53,9 @@ int main(int argc, char *argv[])
      struct pollfd *fds;
      int n;
      std::vector<Client> client;
-     Channel channel("test", "Just a test channel");
+     std::vector<Channel> channels;
+     channels.push_back(Channel("test", "Just a test channel"));
+     channels.push_back(Channel("students", "a channel dedicated to exchanging between students"));
 	//Client **client;
      if (argc < 2) {
          fprintf(stderr,"ERROR, no port provided\n");
@@ -68,10 +70,8 @@ int main(int argc, char *argv[])
 	while (1)
 	{
           bzero(buffer,256);
-          // size_t tmp;
           if (poll(fds, client.size() + 1, 100) > 0) //faire une gestion pour -1 et errno plus tard
           {
-               // tmp = client.size();
                if ((fds[0].revents & POLLIN) && client.size() + 1 <= maxClients)
                {
                     fds[client.size() + 1].fd = accept(sockfd,
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
                               //      delete client[client.size() + 1];
                               client.push_back(Client()); //on cree le premier client vide
                               client.back().setFdSocket(fds[client.size()].fd); //on lui assigne le fd
-                              channel.join(client.back()); //channel par defaut pour l'instant
+                              channels[0].join(client.back()); //channel par defaut pour l'instant
                               if (client.back().getChannel() == NULL)
                                    std::cout << "client has no channel at creation" << std::endl;
                          }
