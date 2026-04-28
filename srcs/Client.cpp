@@ -6,7 +6,7 @@
 /*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/04/17 17:40:19 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/04/27 15:52:39 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,6 +138,6 @@ void	Client::writeOnTerm(std::string message)
 	if (channel_)
 	{
 		std::cout << "Channel of " << userName_ << " exists" << std::endl;
-		channel_->msgEveryone(this, message);
+		channel_->msgEveryone(*this, message);
 	}
 }

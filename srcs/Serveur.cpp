@@ -6,7 +6,7 @@
 /*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 00:00:00 by copilot           #+#    #+#             */
-/*   Updated: 2026/04/09 15:42:35 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/04/27 14:34:21 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ Serveur::Serveur()
 :	_sockfd(-1),
 	_portno(0),
 	_clilen(0),
-	_fds(NULL),
 	_maxClients(0)
 {
 	std::memset(&_serv_addr, 0, sizeof(_serv_addr));
@@ -35,7 +34,6 @@ Serveur::Serveur(int portno, int maxClients)
 :	_sockfd(-1),
 	_portno(portno),
 	_clilen(0),
-	_fds(NULL),
 	_maxClients(maxClients)
 {
 	std::memset(&_serv_addr, 0, sizeof(_serv_addr));
@@ -46,7 +44,6 @@ Serveur::Serveur(const Serveur &other)
 :	_sockfd(-1),
 	_portno(0),
 	_clilen(0),
-	_fds(NULL),
 	_maxClients(0)
 {
 	*this = other;
@@ -58,24 +55,12 @@ Serveur &Serveur::operator=(const Serveur &other)
 	{
 		if (_sockfd >= 0)
 			close(_sockfd);
-		if (_fds)
-			delete[] _fds;
-
 		_sockfd = (other._sockfd >= 0) ? dup(other._sockfd) : -1;
 		_portno = other._portno;
 		_clilen = other._clilen;
 		_serv_addr = other._serv_addr;
 		_cli_addr = other._cli_addr;
 		_maxClients = other._maxClients;
-		_fds = NULL;
-		if (other._fds && _maxClients >= 0)
-		{
-			_fds = new struct pollfd[_maxClients + 1];
-			for (int i = 0; i <= _maxClients; i++)
-				_fds[i] = other._fds[i];
-			if (_sockfd >= 0)
-				_fds[0].fd = _sockfd;
-		}
 	}
 	return (*this);
 }
@@ -84,8 +69,6 @@ Serveur::~Serveur()
 {
 	if (_sockfd >= 0)
 		close(_sockfd);
-	if (_fds)
-		delete[] _fds;
 }
 
 void	Serveur::initialize()
@@ -96,13 +79,6 @@ void	Serveur::initialize()
 		perror("ERROR opening socket");
 		exit(1);
 	}
-	_fds = new struct pollfd[_maxClients + 1];
-	for (int i = 0; i <= _maxClients; i++)
-	{
-		_fds[i].fd = -2;
-		_fds[i].events = POLLIN;
-	}
-	_fds[0].fd = _sockfd;
 	std::memset(&_serv_addr, 0, sizeof(_serv_addr));
 	_serv_addr.sin_family = AF_INET;
 	_serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -119,11 +95,6 @@ void	Serveur::initialize()
 int	Serveur::getSockFd() const
 {
 	return (_sockfd);
-}
-
-struct pollfd	*Serveur::getFds() const
-{
-	return (_fds);
 }
 
 socklen_t	&Serveur::getCliLen()

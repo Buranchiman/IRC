@@ -25,7 +25,7 @@ public:
 	~Channel();
 
 	void	join(Client &client);
-	void	msgEveryone(Client *sender, std::string msg);
+	void	msgEveryone(Client &sender, std::string msg);
 };
 
 #endif /* Channel_HPP */

@@ -24,15 +24,41 @@ void error(const char *msg)
 
 // }
 
+pollfd    newPoll(int fd)
+{
+     pollfd tmp;
+
+     tmp.fd = fd;
+     tmp.events = POLLIN;
+     return (tmp);
+}
+
+void eraseClient(std::vector<Client *> &client, Client *target)
+{
+     for (std::vector<Client*>::iterator it = client.begin();
+     it != client.end();
+     ++it)
+     {
+         if (*it == target)
+         {
+               delete *it;              // destroy object
+               it = client.erase(it);  // returns next iterator
+          }
+          else
+               ++it;
+     }
+}
+
 int main(int argc, char *argv[])
 {
 	const int maxClients = 5;
      int sockfd;
      char buffer[256];
-     struct pollfd *fds;
+     std::vector<pollfd> fds;
+     //struct pollfd *fds;
      int n;
      // sig_atomic_t signalReceived = 0;
-     std::vector<Client> client;
+     std::vector<Client *> client;
      std::vector<Channel> channels;
      channels.push_back(Channel("test", "Just a test channel"));
      channels.push_back(Channel("students", "a channel dedicated to exchanging between students"));
@@ -43,33 +69,36 @@ int main(int argc, char *argv[])
      Serveur serveur(atoi(argv[1]), maxClients);
      serveur.initialize();
      sockfd = serveur.getSockFd();
-     fds = serveur.getFds();
 	socklen_t &clilen = serveur.getCliLen();
 	struct sockaddr_in &cli_addr = serveur.getCliAddr();
      // signal(SIGINT, )
+     fds.push_back(newPoll(sockfd));
 	while (1)
 	{
           bzero(buffer,256);
-          if (poll(fds, client.size() + 1, 100) > 0) //faire une gestion pour -1 et errno plus tard
+          if (poll(fds.data(), client.size() + 1, 100) > 0) //faire une gestion pour -1 et errno plus tard
           {
                if ((fds[0].revents & POLLIN) && client.size() + 1 <= maxClients)
                {
-                    fds[client.size() + 1].fd = accept(sockfd,
-                         (struct sockaddr *) &cli_addr,
-                         &clilen);;
-                         if (fds[client.size() + 1].fd >= 0)
+                    fds.push_back(newPoll(accept(sockfd,
+                          (struct sockaddr *) &cli_addr,
+                          &clilen)));
+                    // fds[client.size() + 1].fd = accept(sockfd,
+                    //      (struct sockaddr *) &cli_addr,
+                    //      &clilen);;
+                         if (fds.back().fd >= 0)
                          {
-                              n = write(fds[client.size() + 1].fd,"username :",10);
+                              n = write(fds.back().fd,"username :",10);
                               // if (client[client.size + 1])
                               //      delete client[client.size() + 1];
-                              client.push_back(Client()); //on cree le premier client vide
-                              client.back().setFdSocket(fds[client.size()].fd); //on lui assigne le fd
-                              channels[0].join(client.back()); //channel par defaut pour l'instant
-                              if (client.back().getChannel() == NULL)
+                              client.push_back(new Client()); //on cree le premier client vide
+                              client.back()->setFdSocket(fds.back().fd); //on lui assigne le fd
+                              channels[0].join(*client.back()); //channel par defaut pour l'instant
+                              if (client.back()->getChannel() == NULL)
                                    std::cout << "client has no channel at creation" << std::endl;
                          }
                }
-               for (unsigned long i = 1; i < client.size() + 1; i++)
+               for (unsigned long i = 1; i < fds.size() ; i++)
                {
                     if ((fds[i].revents & POLLIN) && fds[i].fd != -2)
                     {
@@ -80,32 +109,35 @@ int main(int argc, char *argv[])
                          }
                          if (n == 0)
                          {
-                              //detruire le client et voir comment gerer le fd
+                              close(fds[i].fd); //on ferme le fd
+                              fds.erase(fds.begin() + i); //on erase le pollfd du vecteur
+                              eraseClient(client, client[i - 1]); //on erase le pointeur client et le contenu
                               continue;
                          }
-                         client[i - 1].accessBuffer() += std::string(buffer, n);
-                         std::cout << "pending input is " << client[i - 1].getInput() << std::endl;
+                         client[i - 1]->accessBuffer() += std::string(buffer, n);
+                         std::cout << "pending input is " << client[i - 1]->getInput() << std::endl;
                          size_t pos;
-                         while ((pos = client[i - 1].getInput().find('\n')) != std::string::npos) // tant qu'il y a un \n dans le read
+                         while ((pos = client[i - 1]->getInput().find('\n')) != std::string::npos) // tant qu'il y a un \n dans le read
                          {
-                             std::string line = client[i - 1].getInput().substr(0, pos); //line == la ligne jusqu'au _n
-                             client[i - 1].getInput().erase(0, pos + 1);
+                             std::string line = client[i - 1]->getInput().substr(0, pos); //line == la ligne jusqu'au _n
+                             client[i - 1]->getInput().erase(0, pos + 1);
                              trim(line);
-                             if (client[i - 1].getNameStatus() == false) // si le client a pas de nom on remplit
+                             if (client[i - 1]->getNameStatus() == false) // si le client a pas de nom on remplit
                              {
-                                 client[i - 1].setUserName(line);
-                                 client[i - 1].setReading(true);
+                                 client[i - 1]->setUserName(line);
+                                 client[i - 1]->setReading(true);
                              }
                              else //sinon on ecrit
                              {
                                    if (!line.empty())
-                                        client[i - 1].writeOnTerm(line);
+                                        client[i - 1]->writeOnTerm(line);
                              }
-                             client[i - 1].accessBuffer().erase(0, pos + 1); // puis on enleve ce qu'on a ecrit/mis en username
+                             client[i - 1]->accessBuffer().erase(0, pos + 1); // puis on enleve ce qu'on a ecrit/mis en username
                          }
                     }
                }
           }
 	}
+     // delete client;
      return 0;
 }

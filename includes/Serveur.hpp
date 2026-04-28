@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Serveur.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luciendacunha <luciendacunha@student.42    +#+  +:+       +#+        */
+/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 14:33:43 by luciendacun       #+#    #+#             */
-/*   Updated: 2026/04/05 17:14:10 by luciendacun      ###   ########.fr       */
+/*   Updated: 2026/04/27 14:34:23 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ private:
 	socklen_t			_clilen;
 	struct sockaddr_in	_serv_addr;
 	struct sockaddr_in	_cli_addr;
-	struct pollfd		*_fds; //attention au leak sur la copie 
 	int					_maxClients;
 
 public:
@@ -38,7 +37,8 @@ public:
 	void				initialize();
 	void 				statusServer();
 	int					getSockFd() const;
-	struct pollfd		*getFds() const;
+	pollfd				*getFds();
+	const pollfd		*getFds() const;
 	socklen_t			&getCliLen();
 	struct sockaddr_in	&getCliAddr();
 };

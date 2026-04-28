@@ -26,13 +26,14 @@ void	Channel::join(Client &client)
 	client.setChannel(this);
 }
 
-void	Channel::msgEveryone(Client *sender, std::string msg)
+void	Channel::msgEveryone(Client &sender, std::string msg)
 {
-	std::string out = sender->getUserName() + " :" + std::string(msg) + "\n";
+	std::string out = sender.getUserName() + " :" + std::string(msg) + "\n";
 	for (unsigned long i = 0; i < clients_.size() ; i++)
 	{
-		if (clients_[i] != sender)
+		if (clients_[i] != &sender)
 		{
+			//std::cout << "sender is : " << sender.getUserName() << " destination is : " << clients_[i]->getUserName() << " adresses are " << &sender << clients_[i];
 			write(clients_[i]->getFdSocket(), out.c_str(), out.size());
 			std::cout << out << std::endl;
 		}
