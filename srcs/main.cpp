@@ -55,9 +55,7 @@ int main(int argc, char *argv[])
      int sockfd;
      char buffer[256];
      std::vector<pollfd> fds;
-     //struct pollfd *fds;
      int n;
-     // sig_atomic_t signalReceived = 0;
      std::vector<Client *> client;
      std::vector<Channel> channels;
      channels.push_back(Channel("test", "Just a test channel"));
@@ -71,7 +69,6 @@ int main(int argc, char *argv[])
      sockfd = serveur.getSockFd();
 	socklen_t &clilen = serveur.getCliLen();
 	struct sockaddr_in &cli_addr = serveur.getCliAddr();
-     // signal(SIGINT, )
      fds.push_back(newPoll(sockfd));
 	while (1)
 	{
@@ -83,14 +80,9 @@ int main(int argc, char *argv[])
                     fds.push_back(newPoll(accept(sockfd,
                           (struct sockaddr *) &cli_addr,
                           &clilen)));
-                    // fds[client.size() + 1].fd = accept(sockfd,
-                    //      (struct sockaddr *) &cli_addr,
-                    //      &clilen);;
                          if (fds.back().fd >= 0)
                          {
                               n = write(fds.back().fd,"username :",10);
-                              // if (client[client.size + 1])
-                              //      delete client[client.size() + 1];
                               client.push_back(new Client()); //on cree le premier client vide
                               client.back()->setFdSocket(fds.back().fd); //on lui assigne le fd
                               channels[0].join(*client.back()); //channel par defaut pour l'instant
@@ -100,7 +92,7 @@ int main(int argc, char *argv[])
                }
                for (unsigned long i = 1; i < fds.size() ; i++)
                {
-                    if ((fds[i].revents & POLLIN) && fds[i].fd != -2)
+                    if (fds.size() > 1 && (fds[i].revents & POLLIN) && fds[i].fd != -2)
                     {
                          n = read(fds[i].fd, buffer,255);
                          if (n < 0)
