@@ -8,21 +8,25 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
+#include <fcntl.h>
 #include <poll.h>
+#include <errno.h>
 #include "../includes/Client.hpp"
 #include "../includes/Serveur.hpp"
+#include "../includes/Commande.hpp"
 
 void error(const char *msg)
 {
-    perror(msg);
-    exit(1);
+	perror(msg);
+	exit(1);
 }
 
-// void handleSigint(int sig)
-// {
-//      (void)sig;
-
-// }
+// Forward declarations for handlers
+void handleNewConnection(int sockfd, struct sockaddr_in &cli_addr, socklen_t &clilen,
+						 struct pollfd *fds, std::vector<Client> &clients, int maxClients);
+void handleClientDisconnection(struct pollfd *fds, std::vector<Client> &clients, size_t clientIdx);
+void handleClientInput(std::vector<Client> &clients, size_t clientIdx,
+					   char *buffer, int n, Commande &commande);
 
 pollfd    newPoll(int fd)
 {
@@ -58,8 +62,19 @@ int main(int argc, char *argv[])
      int n;
      std::vector<Client *> client;
      std::vector<Channel> channels;
+
+	 client.reserve(maxClients);
+	 channels.reserve(20);
+
+
      channels.push_back(Channel("test", "Just a test channel"));
      channels.push_back(Channel("students", "a channel dedicated to exchanging between students"));
+
+	channels.push_back(Channel("#test", "Just a test channel"));
+	channels.push_back(Channel("#students", "a channel dedicated to exchanging between students"));
+
+	Commande commande(client, channels);
+
      if (argc < 2) {
          fprintf(stderr,"ERROR, no port provided\n");
          exit(1);
