@@ -19,15 +19,15 @@ class InviteCommand : public Command
 {
 private:
 	std::vector<Channel> *channels_;
-	std::vector<Client> *clients_;
+	std::vector<Client*> &clients_;
 
 public:
-	InviteCommand(std::vector<Channel> &channels, std::vector<Client> &clients);
+	InviteCommand(std::vector<Channel> &channels, std::vector<Client *> &clients);
 	~InviteCommand();
-	
+
 	/**
 	 * @brief Execute INVITE command - Invite user to channel
-	 * 
+	 *
 	 * @param client Client sending the invitation
 	 * @param args Arguments (format: "target_name")
 	 * @return void

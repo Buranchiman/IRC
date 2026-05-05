@@ -15,8 +15,8 @@
 #include <iostream>
 #include <unistd.h>
 
-InviteCommand::InviteCommand(std::vector<Channel> &channels, std::vector<Client> &clients)
-	: channels_(&channels), clients_(&clients)
+InviteCommand::InviteCommand(std::vector<Channel> &channels, std::vector<Client *> &clients)
+	: channels_(&channels), clients_(clients)
 {
 }
 
@@ -70,16 +70,16 @@ void InviteCommand::invite(Client &client, const std::string &channel_name, cons
 
 	Client *target = NULL;
 	std::string target_nick = target_name;
-	
-	for (size_t i = 0; i < clients_->size(); ++i)
+
+	for (size_t i = 0; i < clients_.size(); ++i)
 	{
-		if ((*clients_)[i].getNickName() == target_nick)
+		if (clients_[i]->getNickName() == target_nick)
 		{
-			target = &(*clients_)[i];
+			target = clients_[i];
 			break;
 		}
 	}
-	
+
 	if (!target)
 	{
 		std::string error_msg = "401 " + client.getNickName() + " " + target_name + " :No such nick/channel\r\n";
@@ -88,9 +88,9 @@ void InviteCommand::invite(Client &client, const std::string &channel_name, cons
 	}
 
 	std::string msg = "You have been invited to " + channel_name + " by " + client.getNickName() + "\r\n";
-	
+
 	channel->addInvite(*target);
 	write(target->getFdSocket(), msg.c_str(), msg.size());
-	
+
 	std::cout << "[" << client.getNickName() << "] INVITE #" << channel_name << " " << target_name << std::endl;
 }

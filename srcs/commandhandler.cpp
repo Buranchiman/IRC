@@ -24,10 +24,10 @@ std::string parseCommandArg(const std::string &line, const std::string &prefix, 
 {
 	size_t start = prefix.length();
 	std::string args = line.substr(start);
-	
+
 	while (!args.empty() && args[0] == ' ')
 		args.erase(0, 1);
-	
+
 	remaining = args;
 	return args;
 }
@@ -36,25 +36,25 @@ void handleJoinCommand(Client &client, const std::string &line, std::vector<Chan
 {
 	std::string args;
 	parseCommandArg(line, "JOIN ", args);
-	
+
 	JoinCommand cmd(channels);
 	cmd.execute(client, args);
 }
 
-void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client> &clients)
+void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "KICK ", args);
-	
+
 	KickCommand cmd(channels, clients);
 	cmd.execute(client, args);
 }
 
-void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client> &clients)
+void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "INVITE ", args);
-	
+
 	InviteCommand cmd(channels, clients);
 	cmd.execute(client, args);
 }
@@ -63,7 +63,7 @@ void handleTopicCommand(Client &client, const std::string &line, std::vector<Cha
 {
 	std::string args;
 	parseCommandArg(line, "TOPIC ", args);
-	
+
 	TopicCommand cmd(channels);
 	cmd.execute(client, args);
 }
@@ -72,7 +72,7 @@ void handleModeCommand(Client &client, const std::string &line, std::vector<Chan
 {
 	std::string args;
 	parseCommandArg(line, "MODE ", args);
-	
+
 	ModeCommand cmd(channels);
 	cmd.execute(client, args);
 }
@@ -80,8 +80,8 @@ void handleModeCommand(Client &client, const std::string &line, std::vector<Chan
 void handleCommand(Client &client, const std::string &line, Commande &commande)
 {
 	std::vector<Channel> &channels = *commande.getChannels();
-	std::vector<Client> &clients = *commande.getClients();
-	
+	std::vector<Client *> &clients = commande.getClients();
+
 	if (client.getChannel() == NULL)
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")

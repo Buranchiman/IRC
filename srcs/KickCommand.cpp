@@ -15,8 +15,8 @@
 #include <iostream>
 #include <unistd.h>
 
-KickCommand::KickCommand(std::vector<Channel> &channels, std::vector<Client> &clients)
-	: channels_(&channels), clients_(&clients)
+KickCommand::KickCommand(std::vector<Channel> &channels, std::vector<Client *> &clients)
+	: channels_(&channels), clients_(clients)
 {
 }
 
@@ -28,7 +28,7 @@ void KickCommand::execute(Client &client, const std::string &args)
 {
 	std::string target, reason;
 	parseKick(args, target, reason);
-	
+
 	if (!target.empty())
 	{
 		std::cout << "[" << client.getNickName() << "] KICK " << target << std::endl;
@@ -90,6 +90,6 @@ void KickCommand::kick(Client &client, const std::string &channel_name, const st
 	write(target->getFdSocket(), msg.c_str(), msg.size());
 	msg = "Please join a channel using: JOIN #channelname\r\n";
 	write(target->getFdSocket(), msg.c_str(), msg.size());
-	
+
 	std::cout << "[" << client.getNickName() << "] KICK #" << channel_name << " " << target_name << std::endl;
 }

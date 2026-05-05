@@ -19,15 +19,15 @@ class KickCommand : public Command
 {
 private:
 	std::vector<Channel> *channels_;
-	std::vector<Client> *clients_;
+	std::vector<Client*> &clients_;
 
 public:
-	KickCommand(std::vector<Channel> &channels, std::vector<Client> &clients);
+	KickCommand(std::vector<Channel> &channels, std::vector<Client *> &clients);
 	~KickCommand();
-	
+
 	/**
 	 * @brief Execute KICK command - Remove user from channel
-	 * 
+	 *
 	 * @param client Client performing the kick (must be operator)
 	 * @param args Arguments (format: "target_name [reason]")
 	 * @return void
