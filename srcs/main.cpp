@@ -75,76 +75,105 @@ int main(int argc, char *argv[])
 
 	Commande commande(client, channels);
 
-     if (argc < 2) {
-         fprintf(stderr,"ERROR, no port provided\n");
-         exit(1);
-     }
-     Serveur serveur(atoi(argv[1]), maxClients);
-     serveur.initialize();
-     sockfd = serveur.getSockFd();
+	if (argc < 2)
+	{
+		fprintf(stderr, "ERROR, no port provided\n");
+		exit(1);
+	}
+
+	Serveur serveur(atoi(argv[1]), maxClients);
+	serveur.initialize();
+
+	sockfd = serveur.getSockFd();
 	socklen_t &clilen = serveur.getCliLen();
+	fds.push_back(newPoll(sockfd));
 	struct sockaddr_in &cli_addr = serveur.getCliAddr();
-     fds.push_back(newPoll(sockfd));
+
 	while (1)
 	{
-          bzero(buffer,256);
-          if (poll(fds.data(), client.size() + 1, 100) > 0) //faire une gestion pour -1 et errno plus tard
-          {
-               if ((fds[0].revents & POLLIN) && client.size() + 1 <= maxClients)
+		bzero(buffer, 256);
+
+		if (poll(fds.data(), client.size() + 1, 100) > 0)
+		{
+			if ((fds[0].revents & POLLIN) && (int)client.size() + 1 <= maxClients)
                {
+					if (client.size() >= (size_t)maxClients)
+						break;
                     fds.push_back(newPoll(accept(sockfd,
                           (struct sockaddr *) &cli_addr,
                           &clilen)));
-                         if (fds.back().fd >= 0)
-                         {
-                              n = write(fds.back().fd,"username :",10);
-                              client.push_back(new Client()); //on cree le premier client vide
-                              client.back()->setFdSocket(fds.back().fd); //on lui assigne le fd
-                              channels[0].join(*client.back()); //channel par defaut pour l'instant
-                              if (client.back()->getChannel() == NULL)
-                                   std::cout << "client has no channel at creation" << std::endl;
-                         }
-               }
-               for (unsigned long i = 1; i < fds.size() ; i++)
-               {
-                    if (fds.size() > 1 && (fds[i].revents & POLLIN) && fds[i].fd != -2)
+
+					int flags = fcntl(fds.back().fd, F_GETFL, 0);
+					fcntl(fds.back().fd, F_SETFL, flags | O_NONBLOCK);
+						//check si fd < 0
+                    if (fds.back().fd >= 0)
                     {
-                         n = read(fds[i].fd, buffer,255);
-                         if (n < 0)
-                         {
-                              error("ERROR reading from socket");
-                         }
-                         if (n == 0)
-                         {
-                              close(fds[i].fd); //on ferme le fd
-                              fds.erase(fds.begin() + i); //on erase le pollfd du vecteur
-                              eraseClient(client, client[i - 1]); //on erase le pointeur client et le contenu
-                              continue;
-                         }
-                         client[i - 1]->accessBuffer() += std::string(buffer, n);
-                         std::cout << "pending input is " << client[i - 1]->getInput() << std::endl;
-                         size_t pos;
-                         while ((pos = client[i - 1]->getInput().find('\n')) != std::string::npos) // tant qu'il y a un \n dans le read
-                         {
-                             std::string line = client[i - 1]->getInput().substr(0, pos); //line == la ligne jusqu'au _n
-                             client[i - 1]->getInput().erase(0, pos + 1);
-                             trim(line);
-                             if (client[i - 1]->getNameStatus() == false) // si le client a pas de nom on remplit
-                             {
-                                 client[i - 1]->setUserName(line);
-                                 client[i - 1]->setReading(true);
-                             }
-                             else //sinon on ecrit
-                             {
-                                   if (!line.empty())
-                                        client[i - 1]->writeOnTerm(line);
-                             }
-                             client[i - 1]->accessBuffer().erase(0, pos + 1); // puis on enleve ce qu'on a ecrit/mis en username
-                         }
+                         n = write(fds.back().fd,"username :",10);
+                         client.push_back(new Client()); //on cree le premier client vide
+                         client.back()->setFdSocket(fds.back().fd); //on lui assigne le fd
+                       //   if (client.back()->getChannel() == NULL)
+                       //        std::cout << "client has no channel at creation" << std::endl;
                     }
                }
-          }
+
+			for (unsigned long i = 1; i < client.size() + 1; i++)
+			{
+				if ((fds[i].revents & POLLIN) && fds[i].fd != -2)
+				{
+					n = read(fds[i].fd, buffer, 255);
+
+					if (n < 0)
+					{
+						if (errno != EAGAIN && errno != EWOULDBLOCK)
+							error("ERROR reading from socket");
+						continue;
+					}
+
+					if (n == 0)
+					{
+						std::cout << "destructor Client" << std::endl;
+						close(fds[i].fd); //on ferme le fd
+                        fds.erase(fds.begin() + i); //on erase le pollfd du vecteur
+                        eraseClient(client, client[i - 1]);
+						i--;
+						continue;
+					}
+
+					client[i - 1]->accessBuffer() += std::string(buffer, n);
+                    size_t pos;
+					while ((pos = client[i - 1]->getInput().find('\n')) != std::string::npos) // tant qu'il y a un \n dans le read
+                    {
+                        std::string line = client[i - 1]->getInput().substr(0, pos); //line == la ligne jusqu'au _n
+                        client[i - 1]->getInput().erase(0, pos + 1);
+                        trim(line);
+						if (!line.empty())
+						{
+							std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
+                        	if (client[i - 1]->getNameStatus() == false) // si le client a pas de nom on remplit
+                        	{
+                        	    client[i - 1]->setUserName(line);
+								std::string msg = "Please enter your nickname:\r\n";
+								write(client[i - 1]->getFdSocket(), msg.c_str(), msg.size());
+                        	    client[i - 1]->setReading(true);
+                        	}
+							else if (!client[i - 1]->getNicknameStatus())
+							{
+								client[i - 1]->setNickName(line);
+								std::string msg = "Please join a channel using: JOIN #channelname\r\n";
+								write(client[i - 1]->getFdSocket(), msg.c_str(), msg.size());
+							}
+                        	else //sinon on ecrit
+                        	{
+                        	    void handleCommand(Client & client, const std::string &line, Commande &commande);
+								handleCommand(*client[i - 1], line, commande);
+                        	}
+                        	client[i - 1]->accessBuffer().erase(0, pos + 1); // puis on enleve ce qu'on a ecrit/mis en username
+						}
+                    }
+				}
+			}
+		}
 	}
-     // delete client;
-     return 0;
+
+	return 0;
 }
