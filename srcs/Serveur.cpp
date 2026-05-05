@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Serveur.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: lucien <lucien@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 00:00:00 by copilot           #+#    #+#             */
-/*   Updated: 2026/04/09 15:42:35 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/05/04 18:56:08 by lucien           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <fcntl.h>
 
 Serveur::Serveur()
 :	_sockfd(-1),
@@ -96,6 +97,10 @@ void	Serveur::initialize()
 		perror("ERROR opening socket");
 		exit(1);
 	}
+	// Set server socket to non-blocking mode
+	int flags = fcntl(_sockfd, F_GETFL, 0);
+	fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK);
+	
 	_fds = new struct pollfd[_maxClients + 1];
 	for (int i = 0; i <= _maxClients; i++)
 	{

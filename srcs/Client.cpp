@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: lucien <lucien@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/04/17 17:40:19 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/05/05 02:04:50 by lucien           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,9 @@ void trim(std::string &s)
     }
 }
 
-Client::Client(): userName_(""), pendingInput(""), hasUsername(false), fdSocket_(0), channel_(NULL)
+Client::Client(): userName_(""), nickName_(""), pendingInput(""), hasUsername(false), hasNickname(false), fdSocket_(0), channel_(NULL)
 {
-	std::cout << "Constructor Client" << std::endl;
+	// std::cout << "Constructor Client" << std::endl;
 }
 
 Client::Client(const Client &other)
@@ -37,8 +37,10 @@ Client &Client::operator=(const Client &other)
 	if (this != &other)
 	{
 		this->userName_ = other.userName_;
+		this->nickName_ = other.nickName_;
 		this->fdSocket_ = other.fdSocket_;
 		this->hasUsername = other.hasUsername;
+		this->hasNickname = other.hasNickname;
 		this->channel_ = other.channel_;
 	}
 	return (*this);
@@ -46,7 +48,7 @@ Client &Client::operator=(const Client &other)
 
 Client::~Client()
 {
-	std::cout << "destructor Client" << std::endl;
+	// std::cout << "destructor Client" << std::endl;
 }
 
 //setter
@@ -58,6 +60,13 @@ void Client::setFdSocket(int fd)
 void Client::setUserName(std::string username)
 {
 	this->userName_ = username;
+	this->hasUsername = true;
+}
+
+void Client::setNickName(std::string nickname)
+{
+	this->nickName_ = nickname;
+	this->hasNickname = true;
 }
 
 void Client::setReading(bool opt)
@@ -90,9 +99,19 @@ std::string Client::getUserName() const
 	return (this->userName_);
 }
 
+std::string Client::getNickName() const
+{
+	return (this->nickName_);
+}
+
 bool Client::getNameStatus() const
 {
 	return (this->hasUsername);
+}
+
+bool Client::getNicknameStatus() const
+{
+	return (this->hasNickname);
 }
 
 std::string Client::getInput() const
@@ -137,7 +156,7 @@ void	Client::writeOnTerm(std::string message)
 {
 	if (channel_)
 	{
-		std::cout << "Channel of " << userName_ << " exists" << std::endl;
+		// std::cout << "Channel of " << userName_ << " exists" << std::endl;
 		channel_->msgEveryone(this, message);
 	}
 }
