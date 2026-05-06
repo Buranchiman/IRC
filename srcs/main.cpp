@@ -41,16 +41,43 @@ void eraseClient(std::vector<Client *> &client, Client *target)
 {
      for (std::vector<Client*>::iterator it = client.begin();
      it != client.end();
-     ++it)
+     )
      {
          if (*it == target)
          {
                delete *it;              // destroy object
-               it = client.erase(it);  // returns next iterator
+               it = client.erase(it);  // returns next iterator, no need to increment
           }
           else
                ++it;
      }
+}
+
+void sendWelcome(Client *client)
+{
+	std::string nick = client->getNickName();
+	std::string user = client->getUserName();
+	int fd = client->getFdSocket();
+
+	// Send CAP reply
+	std::string cap = "CAP * LS :\r\n";
+	write(fd, cap.c_str(), cap.size());
+
+	// Send welcome messages
+	std::string msg1 = ":localhost 001 " + nick + " :Welcome to IRC server " + nick + "!" + user + "@localhost\r\n";
+	write(fd, msg1.c_str(), msg1.size());
+
+	std::string msg2 = ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n";
+	write(fd, msg2.c_str(), msg2.size());
+
+	std::string msg3 = ":localhost 003 " + nick + " :This server was created just now\r\n";
+	write(fd, msg3.c_str(), msg3.size());
+
+	std::string msg4 = ":localhost 004 " + nick + " localhost IRCv1.0 o i\r\n";
+	write(fd, msg4.c_str(), msg4.size());
+
+	std::string msg5 = ":localhost 005 " + nick + " CHANTYPES=# EXTBAN=~ :are supported by this server\r\n";
+	write(fd, msg5.c_str(), msg5.size());
 }
 
 int main(int argc, char *argv[])
@@ -108,15 +135,14 @@ int main(int argc, char *argv[])
 						//check si fd < 0
                     if (fds.back().fd >= 0)
                     {
-                         n = write(fds.back().fd,"username :",10);
-                         client.push_back(new Client()); //on cree le premier client vide
-                         client.back()->setFdSocket(fds.back().fd); //on lui assigne le fd
+                         client.push_back(new Client());
+                         client.back()->setFdSocket(fds.back().fd);
                        //   if (client.back()->getChannel() == NULL)
                        //        std::cout << "client has no channel at creation" << std::endl;
                     }
                }
 
-			for (unsigned long i = 1; i < client.size() + 1; i++)
+			for (unsigned long i = 1; i < fds.size() ; i++)
 			{
 				if ((fds[i].revents & POLLIN) && fds[i].fd != -2)
 				{
@@ -141,33 +167,54 @@ int main(int argc, char *argv[])
 
 					client[i - 1]->accessBuffer() += std::string(buffer, n);
                     size_t pos;
-					while ((pos = client[i - 1]->getInput().find('\n')) != std::string::npos) // tant qu'il y a un \n dans le read
+					while ((pos = client[i - 1]->getInput().find('\n')) != std::string::npos)
                     {
-                        std::string line = client[i - 1]->getInput().substr(0, pos); //line == la ligne jusqu'au _n
+                        std::string line = client[i - 1]->getInput().substr(0, pos);
                         client[i - 1]->getInput().erase(0, pos + 1);
                         trim(line);
 						if (!line.empty())
 						{
 							std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
-                        	if (client[i - 1]->getNameStatus() == false) // si le client a pas de nom on remplit
-                        	{
-                        	    client[i - 1]->setUserName(line);
-								std::string msg = "Please enter your nickname:\r\n";
-								write(client[i - 1]->getFdSocket(), msg.c_str(), msg.size());
-                        	    client[i - 1]->setReading(true);
-                        	}
-							else if (!client[i - 1]->getNicknameStatus())
+
+							bool isAuthCommand = false;
+
+							// Handle IRC protocol commands
+							if (line.find("CAP ") == 0)
 							{
-								client[i - 1]->setNickName(line);
-								std::string msg = "Please join a channel using: JOIN #channelname\r\n";
-								write(client[i - 1]->getFdSocket(), msg.c_str(), msg.size());
+								// Send CAP response immediately
+								std::string cap = "CAP * LS :\r\n";
+								write(client[i - 1]->getFdSocket(), cap.c_str(), cap.size());
+								isAuthCommand = true;
 							}
-                        	else //sinon on ecrit
-                        	{
-                        	    void handleCommand(Client & client, const std::string &line, Commande &commande);
+							else if (line.find("NICK ") == 0)
+							{
+								std::string nick = line.substr(5);
+								client[i - 1]->setNickName(nick);
+								isAuthCommand = true;
+							}
+							else if (line.find("USER ") == 0)
+							{
+								std::string user = line.substr(5);
+								size_t space = user.find(' ');
+								if (space != std::string::npos)
+									user = user.substr(0, space);
+								client[i - 1]->setUserName(user);
+								isAuthCommand = true;
+							}
+
+							// Send welcome after NICK and USER are both set
+							if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && isAuthCommand)
+							{
+								sendWelcome(client[i - 1]);
+							}
+							// Handle other IRC commands only after auth complete
+							else if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && !isAuthCommand)
+							{
+								void handleCommand(Client & client, const std::string &line, Commande &commande);
 								handleCommand(*client[i - 1], line, commande);
-                        	}
-                        	client[i - 1]->accessBuffer().erase(0, pos + 1); // puis on enleve ce qu'on a ecrit/mis en username
+							}
+
+                        	client[i - 1]->accessBuffer().erase(0, pos + 1);
 						}
                     }
 				}
