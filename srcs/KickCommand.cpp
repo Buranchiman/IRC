@@ -15,8 +15,8 @@
 #include <iostream>
 #include <unistd.h>
 
-KickCommand::KickCommand(std::vector<Channel> &channels, std::vector<Client *> &clients)
-	: channels_(&channels), clients_(clients)
+KickCommand::KickCommand(std::vector<Channel> &channels)
+	: channels_(&channels)
 {
 }
 

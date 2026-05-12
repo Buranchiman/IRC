@@ -119,7 +119,6 @@ int main(int argc, char *argv[])
 	while (1)
 	{
 		bzero(buffer, 256);
-
 		if (poll(fds.data(), client.size() + 1, 100) > 0)
 		{
 			if ((fds[0].revents & POLLIN) && (int)client.size() + 1 <= maxClients)
