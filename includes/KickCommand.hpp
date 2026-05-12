@@ -19,10 +19,9 @@ class KickCommand : public Command
 {
 private:
 	std::vector<Channel> *channels_;
-	std::vector<Client*> &clients_;
 
 public:
-	KickCommand(std::vector<Channel> &channels, std::vector<Client *> &clients);
+	KickCommand(std::vector<Channel> &channels);
 	~KickCommand();
 
 	/**
