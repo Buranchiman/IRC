@@ -77,12 +77,55 @@ void handleModeCommand(Client &client, const std::string &line, std::vector<Chan
 	cmd.execute(client, args);
 }
 
+void handlePingCommand(Client &client, const std::string &line)
+{
+	std::string args;
+	parseCommandArg(line, "PING ", args);
+
+	// Remove trailing whitespace
+	while (!args.empty() && args[args.length() - 1] == ' ')
+		args.erase(args.length() - 1);
+
+	std::string response = ":localhost PONG " + args + "\r\n";
+	write(client.getFdSocket(), response.c_str(), response.size());
+
+	std::cout << "[SERVER] Sent PONG to " << client.getNickName() << std::endl;
+}
+
+void handleCapCommand(Client &client, const std::string &line)
+{
+	std::string args;
+	parseCommandArg(line, "CAP ", args);
+
+	if (args.find("LS") != std::string::npos)
+	{
+		std::string response = "CAP * LS :\r\n";
+		write(client.getFdSocket(), response.c_str(), response.size());
+		std::cout << "[SERVER] Sent CAP LS to " << client.getNickName() << std::endl;
+	}
+	else if (args.find("END") != std::string::npos)
+	{
+		std::cout << "[SERVER] CAP negotiation ended for " << client.getNickName() << std::endl;
+	}
+}
+
 void handleCommand(Client &client, const std::string &line, Commande &commande)
 {
 	std::vector<Channel> &channels = *commande.getChannels();
 	std::vector<Client *> &clients = commande.getClients();
 
-	std::cout << "entered HANDLER " << std::endl;
+	// Handle commands that can be sent anytime (before JOIN)
+	if (line.size() >= 5 && line.substr(0, 5) == "PING ")
+	{
+		handlePingCommand(client, line);
+		return;
+	}
+	if (line.size() >= 4 && line.substr(0, 4) == "CAP ")
+	{
+		handleCapCommand(client, line);
+		return;
+	}
+
 	if (client.getChannel() == NULL)
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")
