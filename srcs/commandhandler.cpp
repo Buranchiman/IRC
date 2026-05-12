@@ -82,6 +82,7 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 	std::vector<Channel> &channels = *commande.getChannels();
 	std::vector<Client *> &clients = commande.getClients();
 
+	std::cout << "entered HANDLER " << std::endl;
 	if (client.getChannel() == NULL)
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")

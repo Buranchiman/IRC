@@ -14,6 +14,7 @@ private:
 	std::string	pendingInput;
 	bool		hasUsername;
 	bool		hasNickname;
+	bool		hasWelcomeSent;
 	int 		fdSocket_;
 	Channel		*channel_;
 public:
@@ -30,12 +31,14 @@ public:
 	void reset();
 	void initialize(int fdSocket, const char *userName);
 	void setChannel(Channel *channel);
+	void setWelcomeSent(bool status);
 	//getter
 	std::string getUserName() const;
 	std::string getNickName() const;
 	int getFdSocket() const;
 	bool getNameStatus() const;
 	bool getNicknameStatus() const;
+	bool getWelcomeSentStatus() const;
 	std::string getInput() const;
 	Channel		*getChannel() const;
 

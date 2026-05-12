@@ -59,11 +59,7 @@ void sendWelcome(Client *client)
 	std::string user = client->getUserName();
 	int fd = client->getFdSocket();
 
-	// Send CAP reply
-	std::string cap = "CAP * LS :\r\n";
-	write(fd, cap.c_str(), cap.size());
-
-	// Send welcome messages
+	// Send welcome messages (CAP is sent separately when CAP command is received)
 	std::string msg1 = ":localhost 001 " + nick + " :Welcome to IRC server " + nick + "!" + user + "@localhost\r\n";
 	write(fd, msg1.c_str(), msg1.size());
 
@@ -201,10 +197,11 @@ int main(int argc, char *argv[])
 								isAuthCommand = true;
 							}
 
-							// Send welcome after NICK and USER are both set
-							if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && isAuthCommand)
-							{
-								sendWelcome(client[i - 1]);
+						// Send welcome after NICK and USER are both set (only once)
+						if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && !client[i - 1]->getWelcomeSentStatus())
+						{
+							sendWelcome(client[i - 1]);
+							client[i - 1]->setWelcomeSent(true);
 							}
 							// Handle other IRC commands only after auth complete
 							else if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && !isAuthCommand)

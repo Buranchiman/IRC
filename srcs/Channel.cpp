@@ -67,7 +67,7 @@ void	Channel::leave(Client &client)
 
 void	Channel::msgEveryone(Client &sender, std::string msg)
 {
-	std::string out = sender.getUserName() + " :" + std::string(msg) + "\n";
+	std::string out = ":" + sender.getNickName() + "!" + sender.getUserName() + "@localhost " + std::string(msg) + "\n";
 	for (unsigned long i = 0; i < clients_.size() ; i++)
 	{
 		if (clients_[i] != &sender)

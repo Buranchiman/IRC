@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/05/05 13:37:50 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/05/12 12:20:36 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void trim(std::string &s)
     }
 }
 
-Client::Client(): userName_(""), nickName_(""), pendingInput(""), hasUsername(false), hasNickname(false), fdSocket_(0), channel_(NULL)
+Client::Client(): userName_(""), nickName_(""), pendingInput(""), hasUsername(false), hasNickname(false), hasWelcomeSent(false), fdSocket_(0), channel_(NULL)
 {
 	// std::cout << "Constructor Client" << std::endl;
 }
@@ -41,6 +41,7 @@ Client &Client::operator=(const Client &other)
 		this->fdSocket_ = other.fdSocket_;
 		this->hasUsername = other.hasUsername;
 		this->hasNickname = other.hasNickname;
+		this->hasWelcomeSent = other.hasWelcomeSent;
 		this->channel_ = other.channel_;
 	}
 	return (*this);
@@ -80,6 +81,11 @@ void Client::reset()
 	this->userName_.clear();
 }
 
+void Client::setWelcomeSent(bool status)
+{
+	this->hasWelcomeSent = status;
+}
+
 // void Client::initialize(int fdSocket, const char *userName)
 // {
 // 	this->fdSocket_ = fdSocket;
@@ -112,6 +118,11 @@ bool Client::getNameStatus() const
 bool Client::getNicknameStatus() const
 {
 	return (this->hasNickname);
+}
+
+bool Client::getWelcomeSentStatus() const
+{
+	return (this->hasWelcomeSent);
 }
 
 std::string Client::getInput() const
