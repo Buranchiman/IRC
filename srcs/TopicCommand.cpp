@@ -26,23 +26,11 @@ TopicCommand::~TopicCommand()
 
 void TopicCommand::execute(Client &client, const std::string &args)
 {
-	std::string topic;
-	parseTopic(args, topic);
+	std::string channel, topic;
+	parseTopic(args, channel, topic);
 	
-	std::cout << "[" << client.getNickName() << "] TOPIC :" << topic << std::endl;
-	TopicCommand::topic(client, topic);
-}
-
-void TopicCommand::topic(Client &client, const std::string &new_topic)
-{
-	Channel *channel = client.getChannel();
-	if (!channel)
-	{
-		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
-		return;
-	}
-	topic(client, channel->getName(), new_topic);
+	std::cout << "[" << client.getNickName() << "] TOPIC " << channel << " :" << topic << std::endl;
+	TopicCommand::topic(client, channel, topic);
 }
 
 void TopicCommand::topic(Client &client, const std::string &channel_name, const std::string &new_topic)

@@ -29,12 +29,11 @@ public:
 	 * @brief Execute INVITE command - Invite user to channel
 	 *
 	 * @param client Client sending the invitation
-	 * @param args Arguments (format: "target_name")
+	 * @param args Arguments (format: "nickname #channel")
 	 * @return void
 	 */
 	void execute(Client &client, const std::string &args);
 
 private:
-	void invite(Client &client, const std::string &target_name);
 	void invite(Client &client, const std::string &channel_name, const std::string &target_name);
 };

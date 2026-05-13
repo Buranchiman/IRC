@@ -28,12 +28,11 @@ public:
 	 * @brief Execute KICK command - Remove user from channel
 	 *
 	 * @param client Client performing the kick (must be operator)
-	 * @param args Arguments (format: "target_name [reason]")
+	 * @param args Arguments (format: "#channel target_name [reason]")
 	 * @return void
 	 */
 	void execute(Client &client, const std::string &args);
 
 private:
-	void kick(Client &client, const std::string &target_name, const std::string &reason);
 	void kick(Client &client, const std::string &channel_name, const std::string &target_name, const std::string &reason);
 };

@@ -26,20 +26,11 @@ InviteCommand::~InviteCommand()
 
 void InviteCommand::execute(Client &client, const std::string &args)
 {
-	std::cout << "[" << client.getNickName() << "] INVITE " << args << std::endl;
-	invite(client, args);
-}
-
-void InviteCommand::invite(Client &client, const std::string &target_name)
-{
-	Channel *channel = client.getChannel();
-	if (!channel)
-	{
-		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
-		return;
-	}
-	invite(client, channel->getName(), target_name);
+	std::string nickname, channel;
+	parseInvite(args, nickname, channel);
+	
+	std::cout << "[" << client.getNickName() << "] INVITE " << nickname << " " << channel << std::endl;
+	invite(client, channel, nickname);
 }
 
 void InviteCommand::invite(Client &client, const std::string &channel_name, const std::string &target_name)

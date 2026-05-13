@@ -28,12 +28,11 @@ public:
 	 * @brief Execute MODE command - Change channel modes
 	 * 
 	 * @param client Client changing the mode (must be operator)
-	 * @param args Arguments (format: "mode_string [mode_args]")
+	 * @param args Arguments (format: "#channel mode_string [mode_args]")
 	 * @return void
 	 */
 	void execute(Client &client, const std::string &args);
 
 private:
-	void mode(Client &client, const std::string &mode_str, const std::string &args);
 	void mode(Client &client, const std::string &channel_name, const std::string &mode_str, const std::string &args);
 };

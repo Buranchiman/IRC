@@ -28,12 +28,11 @@ public:
 	 * @brief Execute TOPIC command - Set or view channel topic
 	 * 
 	 * @param client Client setting the topic
-	 * @param args Arguments (format: "[:topic_text]")
+	 * @param args Arguments (format: "#channel [:topic_text]")
 	 * @return void
 	 */
 	void execute(Client &client, const std::string &args);
 
 private:
-	void topic(Client &client, const std::string &new_topic);
 	void topic(Client &client, const std::string &channel_name, const std::string &new_topic);
 };

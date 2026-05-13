@@ -27,23 +27,11 @@ ModeCommand::~ModeCommand()
 
 void ModeCommand::execute(Client &client, const std::string &args)
 {
-	std::string mode, modeArgs;
-	parseMode(args, mode, modeArgs);
+	std::string channel, mode, modeArgs;
+	parseMode(args, channel, mode, modeArgs);
 	
-	std::cout << "[" << client.getNickName() << "] MODE " << mode << std::endl;
-	ModeCommand::mode(client, mode, modeArgs);
-}
-
-void ModeCommand::mode(Client &client, const std::string &mode_str, const std::string &args)
-{
-	Channel *channel = client.getChannel();
-	if (!channel)
-	{
-		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
-		return;
-	}
-	mode(client, channel->getName(), mode_str, args);
+	std::cout << "[" << client.getNickName() << "] MODE " << channel << " " << mode << std::endl;
+	ModeCommand::mode(client, channel, mode, modeArgs);
 }
 
 void ModeCommand::mode(Client &client, const std::string &channel_name, const std::string &mode_str, const std::string &args)
@@ -84,6 +72,16 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 	}
 	else if (mode_str[0] == '-')
 	{
+		// Check if trying to use - with i or o modes
+		for (size_t i = 1; i < mode_str.length(); ++i)
+		{
+			if (mode_str[i] == 'i' || mode_str[i] == 'o')
+			{
+				std::string msg = "482 " + client.getNickName() + " " + channel_name + " :Cannot remove mode with - (use toggle with +)\r\n";
+				write(client.getFdSocket(), msg.c_str(), msg.size());
+				return;
+			}
+		}
 		add = false;
 		current = 1;
 	}
@@ -98,9 +96,12 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 				std::cout << "[" << client.getNickName() << "] Set topic restriction: " << (add ? "ON" : "OFF") << std::endl;
 				break;
 			case 'i':
-				channel->setInviteOnly(add);
-				std::cout << "[" << client.getNickName() << "] Set invite only: " << (add ? "ON" : "OFF") << std::endl;
+			{
+				bool isInviteOnly = channel->isInviteOnly();
+				channel->setInviteOnly(!isInviteOnly);
+				std::cout << "[" << client.getNickName() << "] Set invite only: " << (!isInviteOnly ? "ON" : "OFF") << std::endl;
 				break;
+			}
 			case 'o':
 			{
 				if (args.empty())
@@ -118,15 +119,16 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 					return;
 				}
 				
-				if (add)
-				{
-					channel->addOperator(*target);
-					std::cout << "[" << client.getNickName() << "] MODE +o " << args << std::endl;
-				}
-				else
+				bool isOp = channel->isOperator(*target);
+				if (isOp)
 				{
 					channel->removeOperator(*target);
 					std::cout << "[" << client.getNickName() << "] MODE -o " << args << std::endl;
+				}
+				else
+				{
+					channel->addOperator(*target);
+					std::cout << "[" << client.getNickName() << "] MODE +o " << args << std::endl;
 				}
 				break;
 			}

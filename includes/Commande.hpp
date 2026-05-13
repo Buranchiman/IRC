@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commande.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 14:27:31 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/05/12 12:24:30 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/05/13 17:32:50 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,27 +53,40 @@ void parseJoin(const std::string &args, std::string &channelName, std::string &p
  * @brief Parse KICK command arguments
  *
  * @param args Raw arguments string from KICK command
+ * @param channel Reference to store target channel
  * @param target Reference to store target user to kick
  * @param reason Reference to store kick reason (optional)
  * @return void
  */
-void parseKick(const std::string &args, std::string &target, std::string &reason);
+void parseKick(const std::string &args, std::string &channel, std::string &target, std::string &reason);
 
 /**
  * @brief Parse MODE command arguments
  *
  * @param args Raw arguments string from MODE command
+ * @param channel Reference to store target channel
  * @param mode Reference to store mode string (+i, -k, etc)
  * @param modeArgs Reference to store mode arguments (password, limit, etc)
  * @return void
  */
-void parseMode(const std::string &args, std::string &mode, std::string &modeArgs);
+void parseMode(const std::string &args, std::string &channel, std::string &mode, std::string &modeArgs);
 
 /**
  * @brief Parse TOPIC command arguments
  *
  * @param args Raw arguments string from TOPIC command
+ * @param channel Reference to store target channel
  * @param topic Reference to store new topic
  * @return void
  */
-void parseTopic(const std::string &args, std::string &topic);
+void parseTopic(const std::string &args, std::string &channel, std::string &topic);
+
+/**
+ * @brief Parse INVITE command arguments
+ *
+ * @param args Raw arguments string from INVITE command
+ * @param nickname Reference to store target nickname
+ * @param channel Reference to store target channel
+ * @return void
+ */
+void parseInvite(const std::string &args, std::string &nickname, std::string &channel);

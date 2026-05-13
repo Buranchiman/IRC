@@ -26,26 +26,14 @@ KickCommand::~KickCommand()
 
 void KickCommand::execute(Client &client, const std::string &args)
 {
-	std::string target, reason;
-	parseKick(args, target, reason);
+	std::string channel, target, reason;
+	parseKick(args, channel, target, reason);
 
-	if (!target.empty())
+	if (!channel.empty() && !target.empty())
 	{
-		std::cout << "[" << client.getNickName() << "] KICK " << target << std::endl;
-		kick(client, target, reason);
+		std::cout << "[" << client.getNickName() << "] KICK " << channel << " " << target << std::endl;
+		kick(client, channel, target, reason);
 	}
-}
-
-void KickCommand::kick(Client &client, const std::string &target_name, const std::string &reason)
-{
-	Channel *channel = client.getChannel();
-	if (!channel)
-	{
-		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
-		return;
-	}
-	kick(client, channel->getName(), target_name, reason);
 }
 
 void KickCommand::kick(Client &client, const std::string &channel_name, const std::string &target_name, const std::string &reason)
@@ -79,9 +67,9 @@ void KickCommand::kick(Client &client, const std::string &channel_name, const st
 		return;
 	}
 
-	std::string kick_msg = client.getNickName() + " kicked " + target_name;
+	std::string kick_msg = ":" + client.getNickName() + " KICK " + channel_name + " " + target_name;
 	if (!reason.empty())
-		kick_msg += " (" + reason + ")";
+		kick_msg += " :" + reason;
 	kick_msg += "\r\n";
 	channel->broadcastToAll(kick_msg);
 	channel->leave(*target);
@@ -91,5 +79,5 @@ void KickCommand::kick(Client &client, const std::string &channel_name, const st
 	msg = "Please join a channel using: JOIN #channelname\r\n";
 	write(target->getFdSocket(), msg.c_str(), msg.size());
 
-	std::cout << "[" << client.getNickName() << "] KICK #" << channel_name << " " << target_name << std::endl;
+	std::cout << "[" << client.getNickName() << "] KICK " << channel_name << " " << target_name << std::endl;
 }
