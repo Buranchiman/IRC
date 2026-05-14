@@ -62,19 +62,19 @@ void sendWelcome(Client *client)
 
 	// Send welcome messages (CAP is sent separately when CAP command is received)
 	std::string msg1 = ":localhost 001 " + nick + " :Welcome to IRC server " + nick + "!" + user + "@localhost\r\n";
-	write(fd, msg1.c_str(), msg1.size());
+	send(fd, msg1.c_str(), msg1.size(), MSG_NOSIGNAL);
 
 	std::string msg2 = ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n";
-	write(fd, msg2.c_str(), msg2.size());
+	send(fd, msg2.c_str(), msg2.size(), MSG_NOSIGNAL);
 
 	std::string msg3 = ":localhost 003 " + nick + " :This server was created just now\r\n";
-	write(fd, msg3.c_str(), msg3.size());
+	send(fd, msg3.c_str(), msg3.size(), MSG_NOSIGNAL);
 
 	std::string msg4 = ":localhost 004 " + nick + " localhost IRCv1.0 o i\r\n";
-	write(fd, msg4.c_str(), msg4.size());
+	send(fd, msg4.c_str(), msg4.size(), MSG_NOSIGNAL);
 
 	std::string msg5 = ":localhost 005 " + nick + " CHANTYPES=# EXTBAN=~ :are supported by this server\r\n";
-	write(fd, msg5.c_str(), msg5.size());
+	send(fd, msg5.c_str(), msg5.size(), MSG_NOSIGNAL);
 }
 
 int main(int argc, char *argv[])
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 				if ((fds[i].revents & POLLIN) && fds[i].fd != -2)
 				{
 					n = read(fds[i].fd, buffer, 255);
-
+					printf("recv %i bytes\n", n);
 					if (n < 0)
 					{
 						if (errno != EAGAIN && errno != EWOULDBLOCK)
@@ -177,16 +177,15 @@ int main(int argc, char *argv[])
                         trim(line);
 						if (!line.empty())
 						{
-							std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
-
-							bool isAuthCommand = false;
-
+						// Removed slow cout for performance
+						// std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
+						bool isAuthCommand = false;
 							// Handle IRC protocol commands
 							if (line.find("CAP ") == 0)
 							{
 								// Send CAP response immediately
 								std::string cap = "CAP * LS :\r\n";
-								write(client[i - 1]->getFdSocket(), cap.c_str(), cap.size());
+								send(client[i - 1]->getFdSocket(), cap.c_str(), cap.size(), MSG_NOSIGNAL);
 								isAuthCommand = true;
 							}
 							else if (line.find("NICK ") == 0)

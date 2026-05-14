@@ -49,3 +49,16 @@ public:
 };
 
 void trim(std::string &str);
+
+// static void send_all(int fd, const std::string &msg)
+// {
+//     size_t sent = 0;
+//     while (sent < msg.size())
+//     {
+//         ssize_t n = send(fd, msg.c_str() + sent,
+//                          msg.size() - sent, MSG_NOSIGNAL);
+//         if (n <= 0)
+//             return;
+//         sent += n;
+//     }
+// }

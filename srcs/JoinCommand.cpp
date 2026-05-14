@@ -29,7 +29,6 @@ void JoinCommand::execute(Client &client, const std::string &args)
 	std::string channelName, password;
 	parseJoin(args, channelName, password);
 	
-	std::cout << "[" << client.getNickName() << "] JOIN #" << channelName << std::endl;
 	join(client, channelName, password);
 }
 
@@ -39,28 +38,26 @@ void JoinCommand::join(Client &client, const std::string &channel_name, const st
 		return ;
 	if (channel_name.empty())
 		return ;
-	std::cout << "[DEBUG] join() channel_name='" << channel_name << "'" << std::endl;
 	for (std::vector<Channel>::iterator it = channels_->begin(); it != channels_->end(); ++it)
 	{
-		std::cout << "[DEBUG] compare with channel='" << it->getName() << "'" << std::endl;
 		if (it->getName() == channel_name)
 		{
 			if (it->isInviteOnly() && !it->isInvited(client))
 			{
 				std::string msg = "473 " + client.getNickName() + " " + channel_name + " :Cannot join channel (+i)\r\n";
-				write(client.getFdSocket(), msg.c_str(), msg.size());
+				send(client.getFdSocket(), msg.c_str(), msg.size(), MSG_NOSIGNAL);
 				return;
 			}
 			if (it->hasPassword() && !it->checkPassword(key))
 			{
 				std::string msg = "475 " + client.getNickName() + " " + channel_name + " :Cannot join channel (+k)\r\n";
-				write(client.getFdSocket(), msg.c_str(), msg.size());
+				send(client.getFdSocket(), msg.c_str(), msg.size(), MSG_NOSIGNAL);
 				return;
 			}
 			if (it->isUserLimitReached())
 			{
 				std::string msg = "471 " + client.getNickName() + " " + channel_name + " :Cannot join channel (+l)\r\n";
-				write(client.getFdSocket(), msg.c_str(), msg.size());
+				send(client.getFdSocket(), msg.c_str(), msg.size(), MSG_NOSIGNAL);
 				return;
 			}
 			Channel *current = client.getChannel();
@@ -68,15 +65,43 @@ void JoinCommand::join(Client &client, const std::string &channel_name, const st
 				current->leave(client);
 			it->join(client);
 			it->removeInvite(client);
-			std::cout << "[JOIN] " << client.getUserName() << " -> " << it->getName() << std::endl;
+			
+			// Send JOIN confirmation
+			std::string joinMsg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channel_name + "\r\n";
+			send(client.getFdSocket(), joinMsg.c_str(), joinMsg.size(), MSG_NOSIGNAL);
+			
+			// Send topic (331/332)
 			std::string topic = it->getTopic();
 			if (topic.empty())
-				topic = "(no topic)";
-			std::string msg = "TOPIC " + it->getName() + " : " + topic + "\n";
-			write(client.getFdSocket(), msg.c_str(), msg.size());
+			{
+				std::string noTopic = ":localhost 331 " + client.getNickName() + " " + channel_name + " :No topic is set\r\n";
+				send(client.getFdSocket(), noTopic.c_str(), noTopic.size(), MSG_NOSIGNAL);
+			}
+			else
+			{
+				std::string topicMsg = ":localhost 332 " + client.getNickName() + " " + channel_name + " :" + topic + "\r\n";
+				send(client.getFdSocket(), topicMsg.c_str(), topicMsg.size(), MSG_NOSIGNAL);
+			}
+			
+			// Send NAMES list (353)
+			std::string namesList = ":localhost 353 " + client.getNickName() + " = " + channel_name + " :";
+			const std::vector<Client*> &members = it->getMembers();
+			for (unsigned long i = 0; i < members.size(); ++i)
+			{
+				namesList += members[i]->getNickName();
+				if (i < members.size() - 1)
+					namesList += " ";
+			}
+			namesList += "\r\n";
+			send(client.getFdSocket(), namesList.c_str(), namesList.size(), MSG_NOSIGNAL);
+			
+			// Send end of NAMES (366)
+			std::string endNames = ":localhost 366 " + client.getNickName() + " " + channel_name + " :End of NAMES list\r\n";
+			send(client.getFdSocket(), endNames.c_str(), endNames.size(), MSG_NOSIGNAL);
+			
 			return ;
 		}
 	}
 	std::string msg = "403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
-	write(client.getFdSocket(), msg.c_str(), msg.size());
+	send(client.getFdSocket(), msg.c_str(), msg.size(), MSG_NOSIGNAL);
 }

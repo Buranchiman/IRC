@@ -88,8 +88,6 @@ void handlePingCommand(Client &client, const std::string &line)
 
 	std::string response = ":localhost PONG " + args + "\r\n";
 	write(client.getFdSocket(), response.c_str(), response.size());
-
-	std::cout << "[SERVER] Sent PONG to " << client.getNickName() << std::endl;
 }
 
 void handleCapCommand(Client &client, const std::string &line)
@@ -101,11 +99,10 @@ void handleCapCommand(Client &client, const std::string &line)
 	{
 		std::string response = "CAP * LS :\r\n";
 		write(client.getFdSocket(), response.c_str(), response.size());
-		std::cout << "[SERVER] Sent CAP LS to " << client.getNickName() << std::endl;
 	}
 	else if (args.find("END") != std::string::npos)
 	{
-		std::cout << "[SERVER] CAP negotiation ended for " << client.getNickName() << std::endl;
+		// Removed slow cout
 	}
 }
 
@@ -152,7 +149,8 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 			handleModeCommand(client, line, channels);
 		else if (line.size() > 0)
 		{
-			std::cout << "[" << client.getNickName() << "] Message: " << line << std::endl;
+			// Removed slow cout for performance
+			// std::cout << "[" << client.getNickName() << "] Message: " << line << std::endl;
 			client.writeOnTerm(line);
 		}
 	}

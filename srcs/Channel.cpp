@@ -67,15 +67,15 @@ void	Channel::leave(Client &client)
 
 void	Channel::msgEveryone(Client &sender, std::string msg)
 {
-	std::string out = ":" + sender.getNickName() + "!" + sender.getUserName() + "@localhost " + std::string(msg) + "\n";
+	std::string out = ":" + sender.getNickName() + "!" + sender.getUserName() + "@localhost " + msg + "hahahahahha" "\r\n";
 	for (unsigned long i = 0; i < clients_.size() ; i++)
 	{
-		if (clients_[i] != &sender)
-		{
-			//std::cout << "sender is : " << sender.getUserName() << " destination is : " << clients_[i]->getUserName() << " adresses are " << &sender << clients_[i];
-			write(clients_[i]->getFdSocket(), out.c_str(), out.size());
-			std::cout << out << std::endl;
-		}
+		// if (clients_[i] != &sender)
+		// {
+			std::cout << "name of client is" << clients_[i]->getNickName() << std::endl;
+			send(clients_[i]->getFdSocket(), out.c_str(), out.size(), MSG_NOSIGNAL);
+			//write(clients_[i]->getFdSocket(), out.c_str(), out.size());
+		// }
 	}
 }
 
@@ -85,7 +85,6 @@ void	Channel::broadcastToAll(std::string msg)
 	{
 		write(clients_[i]->getFdSocket(), msg.c_str(), msg.size());
 	}
-	std::cout << msg << std::endl;
 }
 
 std::string const	&Channel::getName() const
@@ -270,4 +269,9 @@ bool Channel::isUserLimitReached() const
 	if (!hasUserLimit())
 		return false;
 	return (int)clients_.size() >= _userLimit;
+}
+
+const std::vector<Client*> &Channel::getMembers() const
+{
+	return clients_;
 }

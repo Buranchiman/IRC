@@ -4,6 +4,7 @@
 #include "Client.hpp"
 #include <vector>
 #include <unistd.h>
+#include <sys/socket.h>
 
 class Client;
 
@@ -66,6 +67,7 @@ public:
 	// ajout commande
 	std::string const	&getName() const;
 	std::string const	&getTopic() const;
+	const std::vector<Client*> &getMembers() const;
 };
 
 #endif /* Channel_HPP */
