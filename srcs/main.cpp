@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <iostream>
 #include <fcntl.h>
 #include <poll.h>
@@ -79,8 +80,9 @@ void sendWelcome(Client *client)
 int main(int argc, char *argv[])
 {
 	const int maxClients = 5;
+	const int BUFFER_SIZE = 4096;
      int sockfd;
-     char buffer[256];
+     char buffer[BUFFER_SIZE];
      std::vector<pollfd> fds;
      int n;
      std::vector<Client *> client;
@@ -114,8 +116,8 @@ int main(int argc, char *argv[])
 
 	while (1)
 	{
-		bzero(buffer, 256);
-		if (poll(fds.data(), client.size() + 1, 100) > 0)
+		bzero(buffer, BUFFER_SIZE);
+		if (poll(fds.data(), client.size() + 1, 0) > 0)
 		{
 			if ((fds[0].revents & POLLIN) && (int)client.size() + 1 <= maxClients)
                {
@@ -127,6 +129,11 @@ int main(int argc, char *argv[])
 
 					int flags = fcntl(fds.back().fd, F_GETFL, 0);
 					fcntl(fds.back().fd, F_SETFL, flags | O_NONBLOCK);
+					
+					// Disable Nagle's algorithm for low latency
+					int opt = 1;
+					setsockopt(fds.back().fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
+					
 						//check si fd < 0
                     if (fds.back().fd >= 0)
                     {
@@ -160,12 +167,13 @@ int main(int argc, char *argv[])
 						continue;
 					}
 
-					client[i - 1]->accessBuffer() += std::string(buffer, n);
+					std::string &clientBuffer = client[i - 1]->accessBuffer();
+					clientBuffer += std::string(buffer, n);
                     size_t pos;
-					while ((pos = client[i - 1]->getInput().find('\n')) != std::string::npos)
+					while ((pos = clientBuffer.find('\n')) != std::string::npos)
                     {
-                        std::string line = client[i - 1]->getInput().substr(0, pos);
-                        client[i - 1]->getInput().erase(0, pos + 1);
+                        std::string line = clientBuffer.substr(0, pos);
+                        clientBuffer.erase(0, pos + 1);
                         trim(line);
 						if (!line.empty())
 						{
@@ -210,7 +218,6 @@ int main(int argc, char *argv[])
 								handleCommand(*client[i - 1], line, commande);
 							}
 
-                        	client[i - 1]->accessBuffer().erase(0, pos + 1);
 						}
                     }
 				}

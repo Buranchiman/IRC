@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 00:00:00 by copilot           #+#    #+#             */
-/*   Updated: 2026/05/05 13:38:21 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/05/14 14:54:27 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,14 @@ void	Serveur::initialize()
 		perror("ERROR opening socket");
 		exit(1);
 	}
+	
+	// Allow immediate reuse of the port (fix TIME_WAIT delay on restart)
+	int reuse = 1;
+	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0)
+	{
+		perror("setsockopt(SO_REUSEADDR) failed");
+	}
+	
 	int flags = fcntl(_sockfd, F_GETFL, 0);
 	fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK);
 	std::memset(&_serv_addr, 0, sizeof(_serv_addr));
