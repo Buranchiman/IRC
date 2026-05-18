@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: chillichien <chillichien@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/05/12 12:20:36 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/05/18 12:23:12 by chillichien      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,4 +170,17 @@ void	Client::writeOnTerm(std::string message)
 		//std::cout << "Channel of " << userName_ << " exists" << std::endl;
 		channel_->msgEveryone(*this, message);
 	}
+}
+
+void send_all(int fd, const std::string &msg)
+{
+    size_t sent = 0;
+    while (sent < msg.size())
+    {
+        ssize_t n = send(fd, msg.c_str() + sent,
+                         msg.size() - sent, MSG_NOSIGNAL);
+        if (n <= 0)
+            return;
+        sent += n;
+    }
 }
