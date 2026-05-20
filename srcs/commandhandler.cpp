@@ -106,6 +106,12 @@ void handleCapCommand(Client &client, const std::string &line)
 	}
 }
 
+void handleMessageCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+{
+	ModeCommand cmd(channels);
+	cmd.execute(client, line);
+}
+
 void handleCommand(Client &client, const std::string &line, Commande &commande)
 {
 	std::vector<Channel> &channels = *commande.getChannels();
@@ -147,10 +153,11 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 			handleTopicCommand(client, line, channels);
 		else if (line.size() >= 5 && line.substr(0, 5) == "MODE ")
 			handleModeCommand(client, line, channels);
-		else if (line.size() > 0)
+		else if (line.size() >= 8 && line.substr(0, 8) == "PRIVMSG ")
 		{
 			// Removed slow cout for performance
 			// std::cout << "[" << client.getNickName() << "] Message: " << line << std::endl;
+			handleMessageCommand(client, line, channels);
 			client.writeOnTerm(line);
 		}
 	}
