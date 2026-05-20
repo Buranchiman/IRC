@@ -70,12 +70,12 @@ void	Channel::msgEveryone(Client &sender, std::string msg)
 	std::string out = ":" + sender.getNickName() + "!" + sender.getUserName() + "@localhost " + msg + "\r\n";
 	for (unsigned long i = 0; i < clients_.size() ; i++)
 	{
-		// if (clients_[i] != &sender)
-		// {
+		if (clients_[i] != &sender)
+		{
 			std::cout << "name of client is" << clients_[i]->getNickName() << std::endl;
 			send(clients_[i]->getFdSocket(), out.c_str(), out.size(), MSG_NOSIGNAL);
 			//write(clients_[i]->getFdSocket(), out.c_str(), out.size());
-		// }
+		}
 	}
 }
 
