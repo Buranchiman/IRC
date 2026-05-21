@@ -3,20 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   PrivMsg.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/05/20 14:56:23 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/05/21 14:40:16 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/PrivMsg.hpp"
-#include "../includes/Commande.hpp"
 #include <iostream>
 #include <unistd.h>
 
-PrivMsg::PrivMsg(std::vector<Channel> &channels)
-	: channels_(&channels)
+PrivMsg::PrivMsg(std::vector<Client *> &clients, std::vector<Channel> &channels)
+	: clients_(&clients), channels_(&channels)
 {
 }
 
@@ -31,43 +30,57 @@ void PrivMsg::execute(Client &client, const std::string &args)
 
 void PrivMsg::message(Client &client, const std::string &msg)
 {
-    bool    isPrivate = true;
-    int     len;
-    int     i = 8;
-    int     j = 0;
-	if (!channels_)
-		return ;
-    len = msg.size();
-	while (i < msg.size())
-    {
-        if (msg[i] == ' ')
-            continue;
-        else
-        {
-            if (msg[i] == '#')
-                isPrivate = false;
-            int j = 0;
-            while (msg[i + j] && msg[i + j] == ' ')
-                j++;
-            break ;
-        }
-        i++;
-    }
-    std::string target = msg.substr(i, j);
-    if (!isPrivate && client.getChannel()->getName() != target)
-    {
-        std::string err404 = ":localhost 404 " + client.getNickName() + " " + target + " :Cannot send to channel" + "\r\n";
-        send_all(client.getFdSocket(), err404);
-    }
-}
-
-	std::string out = ":" + sender.getNickName() + "!" + sender.getUserName() + "@localhost " + msg + "\r\n";
-	for (unsigned long i = 0; i < clients_.size() ; i++)
+	if (!channels_ || !clients_)
+		return;
+	std::string args = msg;
+	while (!args.empty() && args[0] == ' ')
+		args.erase(0, 1);
+	if (args.empty())
+		return;
+	size_t space = args.find(' ');
+	if (space == std::string::npos)
 	{
-		if (clients_[i] != &sender)
-		{
-			std::cout << "name of client is" << clients_[i]->getNickName() << std::endl;
-			send(clients_[i]->getFdSocket(), out.c_str(), out.size(), MSG_NOSIGNAL);
-			//write(clients_[i]->getFdSocket(), out.c_str(), out.size());
-		}
+		std::string err = ":localhost 411 " + client.getNickName() + " :No recipient given (PRIVMSG)\r\n";
+		send_all(client.getFdSocket(), err);
+		return;
 	}
+	std::string target = args.substr(0, space);
+	std::string message;
+	size_t colon = args.find(" :");
+	if (colon != std::string::npos)
+		message = args.substr(colon + 2);
+	else if (space + 1 < args.size())
+		message = args.substr(space + 1);
+	if (target.empty() || message.empty())
+	{
+		std::string err = ":localhost 412 " + client.getNickName() + " :No text to send\r\n";
+		send_all(client.getFdSocket(), err);
+		return;
+	}
+	if (!target.empty() && target[0] == '#')
+	{
+		Channel *channel = client.getChannel();
+		if (!channel || channel->getName() != target)
+		{
+			std::string err = ":localhost 404 " + client.getNickName() + " " + target + " :Cannot send to channel\r\n";
+			send_all(client.getFdSocket(), err);
+			return;
+		}
+		channel->msgEveryone(client, "PRIVMSG " + target + " :" + message);
+		return;
+	}
+	Client *recipient = findClientByNickname(*clients_, target);
+	if (!recipient)
+	{
+		std::string err = ":localhost 401 " + client.getNickName() + " " + target + " :No such nick/channel\r\n";
+		send_all(client.getFdSocket(), err);
+		return;
+	}
+    std::string test = ":test!test@localhost PRIVMSG lulu :HELLO\r\n";
+    send_all(recipient->getFdSocket(), test);
+    std::string test1 = "PRIVMSG lulu :HELLO\r\n";
+    send_all(recipient->getFdSocket(), test1);
+	std::string out = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost PRIVMSG " + target + " :" + message + "\r\n";
+    std::cout << out << "to " << recipient->getNickName() << std::endl;
+	send_all(recipient->getFdSocket(), out);
+}
