@@ -61,20 +61,20 @@ void sendWelcome(Client *client)
 	int fd = client->getFdSocket();
 
 	// Send welcome messages (CAP is sent separately when CAP command is received)
+>>>>>>> ca6c83f (still WIP dms)
 	std::string msg1 = ":localhost 001 " + nick + " :Welcome to IRC server " + nick + "!" + user + "@localhost\r\n";
-	send(fd, msg1.c_str(), msg1.size(), MSG_NOSIGNAL);
-	
+	send_all(fd, msg1);
 	std::string msg2 = ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n";
-	send(fd, msg2.c_str(), msg2.size(), MSG_NOSIGNAL);
+	send_all(fd, msg2);
 
 	std::string msg3 = ":localhost 003 " + nick + " :This server was created just now\r\n";
-	send(fd, msg3.c_str(), msg3.size(), MSG_NOSIGNAL);
+	send_all(fd, msg3);
 
 	std::string msg4 = ":localhost 004 " + nick + " localhost IRCv1.0 o i\r\n";
-	send(fd, msg4.c_str(), msg4.size(), MSG_NOSIGNAL);
+	send_all(fd, msg4);
 
 	std::string msg5 = ":localhost 005 " + nick + " CHANTYPES=# EXTBAN=~ :are supported by this server\r\n";
-	send(fd, msg5.c_str(), msg5.size(), MSG_NOSIGNAL);
+	send_all(fd, msg5);
 }
 
 int main(int argc, char *argv[])
@@ -129,11 +129,11 @@ int main(int argc, char *argv[])
 
 					int flags = fcntl(fds.back().fd, F_GETFL, 0);
 					fcntl(fds.back().fd, F_SETFL, flags | O_NONBLOCK);
-					
+
 					// Disable Nagle's algorithm for low latency
 					int opt = 1;
 					setsockopt(fds.back().fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
-					
+
 						//check si fd < 0
                     if (fds.back().fd >= 0)
                     {
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
 							{
 								// Send CAP response immediately
 								std::string cap = "CAP * LS :\r\n";
-								send(client[i - 1]->getFdSocket(), cap.c_str(), cap.size(), MSG_NOSIGNAL);
+								send_all(client[i - 1]->getFdSocket(), cap);
 								isAuthCommand = true;
 							}
 							else if (line.find("NICK ") == 0)

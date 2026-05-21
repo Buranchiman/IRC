@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillichien <chillichien@student.42.fr>    +#+  +:+       +#+        */
+/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/05/18 12:23:12 by chillichien      ###   ########.fr       */
+/*   Updated: 2026/05/21 11:13:32 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,6 +170,16 @@ void	Client::writeOnTerm(std::string message)
 		//std::cout << "Channel of " << userName_ << " exists" << std::endl;
 		channel_->msgEveryone(*this, message);
 	}
+}
+
+Client* findClientByNickname(const std::vector<Client *> &clients, const std::string &nickname)
+{
+    for (size_t i = 0; i < clients.size(); ++i)
+    {
+        if (clients[i] && clients[i]->getNickName() == nickname)
+            return clients[i];
+    }
+    return NULL;
 }
 
 void send_all(int fd, const std::string &msg)

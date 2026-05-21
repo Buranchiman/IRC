@@ -19,6 +19,7 @@
 #include "../includes/InviteCommand.hpp"
 #include "../includes/TopicCommand.hpp"
 #include "../includes/ModeCommand.hpp"
+#include "../includes/PrivMsg.hpp"
 
 std::string parseCommandArg(const std::string &line, const std::string &prefix, std::string &remaining)
 {
@@ -106,10 +107,12 @@ void handleCapCommand(Client &client, const std::string &line)
 	}
 }
 
-void handleMessageCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+void handleMessageCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
 {
-	ModeCommand cmd(channels);
-	cmd.execute(client, line);
+	std::string args;
+	parseCommandArg(line, "PRIVMSG ", args);
+	PrivMsg cmd(clients, channels);
+	cmd.execute(client, args);
 }
 
 void handleCommand(Client &client, const std::string &line, Commande &commande)
@@ -157,8 +160,7 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 		{
 			// Removed slow cout for performance
 			// std::cout << "[" << client.getNickName() << "] Message: " << line << std::endl;
-			handleMessageCommand(client, line, channels);
-			client.writeOnTerm(line);
+			handleMessageCommand(client, line, channels, clients);
 		}
 	}
 }

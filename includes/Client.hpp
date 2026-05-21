@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <vector>
 #include <Channel.hpp>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -49,6 +50,8 @@ public:
 	static void		destroyPool(Client **clients, int maxClients);
 	void			writeOnTerm(std::string message);
 };
+
+Client* findClientByNickname(const std::vector<Client *> &clients, const std::string &nickname);
 
 void trim(std::string &str);
 
