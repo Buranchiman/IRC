@@ -60,21 +60,30 @@ void sendWelcome(Client *client)
 	std::string user = client->getUserName();
 	int fd = client->getFdSocket();
 
-	// Send welcome messages (CAP is sent separately when CAP command is received)
-	std::string msg1 = ":localhost 001 " + nick + " :Welcome to IRC server " + nick + "!" + user + "@localhost\r\n";
-	send_all(fd, msg1);
+	// // Send welcome messages (CAP is sent separately when CAP command is received)
+	// std::string msg1 = ":localhost 001 " + nick + " :Welcome to IRC server " + nick + "!" + user + "@localhost\r\n";
+	// send_all(fd, msg1);
 
-	std::string msg2 = ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n";
-	send_all(fd, msg2);
+	// std::string msg2 = ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n";
+	// send_all(fd, msg2);
 
-	std::string msg3 = ":localhost 003 " + nick + " :This server was created just now\r\n";
-	send_all(fd, msg3);
+	// std::string msg3 = ":localhost 003 " + nick + " :This server was created just now\r\n";
+	// send_all(fd, msg3);
 
-	std::string msg4 = ":localhost 004 " + nick + " localhost IRCv1.0 o i\r\n";
-	send_all(fd, msg4);
+	// std::string msg4 = ":localhost 004 " + nick + " localhost IRCv1.0 o i\r\n";
+	// send_all(fd, msg4);
 
-	std::string msg5 = ":localhost 005 " + nick + " CHANTYPES=# EXTBAN=~ :are supported by this server\r\n";
-	send_all(fd, msg5);
+	// std::string msg5 = ":localhost 005 " + nick + " CHANTYPES=# EXTBAN=~ :are supported by this server\r\n";
+	// send_all(fd, msg5);
+	send_all(fd, ":localhost 001 " + nick + " :Welcome to the IRC Network " + nick + "!" + user + "@localhost\r\n");
+
+	send_all(fd, ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n");
+
+	send_all(fd, ":localhost 003 " + nick + " :This server was created just now\r\n");
+
+	send_all(fd, ":localhost 004 " + nick + " localhost IRCv1.0 io io\r\n");
+
+	send_all(fd, ":localhost 005 " + nick + " CHANTYPES=# NICKLEN=30 USERLEN=10 CASEMAPPING=rfc1459 PREFIX=(o)@ :are supported\r\n");
 }
 
 int main(int argc, char *argv[])
@@ -175,24 +184,23 @@ int main(int argc, char *argv[])
                         std::string line = clientBuffer.substr(0, pos);
                         clientBuffer.erase(0, pos + 1);
                         trim(line);
+						std::cout << "line is " << line << std::endl;
 						if (!line.empty())
 						{
 						// Removed slow cout for performance
 						// std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
-						bool isAuthCommand = false;
 							// Handle IRC protocol commands
-							if (line.find("CAP ") == 0)
+							if (!client[i - 1]->gethasCapStart_() && line.find("CAP LS") == 0)
 							{
 								// Send CAP response immediately
-								std::string cap = "CAP * LS :\r\n";
+								std::string cap = ":localhost CAP * LS :\r\n";
 								send_all(client[i - 1]->getFdSocket(), cap);
-								isAuthCommand = true;
+								client[i - 1]->setCapStart(true);
 							}
 							else if (line.find("NICK ") == 0)
 							{
 								std::string nick = line.substr(5);
 								client[i - 1]->setNickName(nick);
-								isAuthCommand = true;
 							}
 							else if (line.find("USER ") == 0)
 							{
@@ -201,22 +209,27 @@ int main(int argc, char *argv[])
 								if (space != std::string::npos)
 									user = user.substr(0, space);
 								client[i - 1]->setUserName(user);
-								isAuthCommand = true;
 							}
-
-						// Send welcome after NICK and USER are both set (only once)
-						if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && !client[i - 1]->getWelcomeSentStatus())
-						{
-							sendWelcome(client[i - 1]);
-							client[i - 1]->setWelcomeSent(true);
+							if (!client[i - 1]->gethasCapEnd_() && line == "CAP END")
+								client[i - 1]->setCapEnd(true);
+							// Send welcome after NICK and USER are both set (only once)
+							if (!client[i - 1]->getwelcomeSent_Status() && client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus())
+							{
+								sendWelcome(client[i - 1]);
+								client[i - 1]->setwelcomeSent_(true);
 							}
 							// Handle other IRC commands only after auth complete
-							else if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && !isAuthCommand)
+							if (client[i - 1]->getregistered_())
 							{
 								void handleCommand(Client & client, const std::string &line, Commande &commande);
+								std::cout << "[" << client[i - 1]->getNickName() << "]" << std::endl;
 								handleCommand(*client[i - 1], line, commande);
 							}
-
+							else
+							{
+								send_all(client[i - 1]->getFdSocket(), "451\r\n");
+							}
+							client[i - 1]->checkRegistration();
 						}
                     }
 				}

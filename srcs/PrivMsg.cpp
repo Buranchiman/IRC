@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PrivMsg.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/05/21 14:40:16 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/05/22 14:56:11 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,10 +76,16 @@ void PrivMsg::message(Client &client, const std::string &msg)
 		send_all(client.getFdSocket(), err);
 		return;
 	}
-    std::string test = ":test!test@localhost PRIVMSG lulu :HELLO\r\n";
-    send_all(recipient->getFdSocket(), test);
-    std::string test1 = "PRIVMSG lulu :HELLO\r\n";
-    send_all(recipient->getFdSocket(), test1);
+    // std::string test = ":test!test@localhost PRIVMSG lulu :HELLO\r\n";
+    // send_all(recipient->getFdSocket(), test);
+    // std::string test1 = "PRIVMSG lulu :HELLO\r\n";
+    // send_all(recipient->getFdSocket(), test1);
+	std::cout
+<< "SEND PRIVMSG FROM=[" << client.getNickName() << "]"
+<< " TO=[" << target << "]"
+<< " welcome=" << client.getwelcomeSent_Status()
+<< " nick_len=" << client.getNickName().size()
+<< std::endl;
 	std::string out = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost PRIVMSG " + target + " :" + message + "\r\n";
     std::cout << out << "to " << recipient->getNickName() << std::endl;
 	send_all(recipient->getFdSocket(), out);

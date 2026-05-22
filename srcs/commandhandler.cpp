@@ -126,12 +126,11 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 		handlePingCommand(client, line);
 		return;
 	}
-	if (line.size() >= 4 && line.substr(0, 4) == "CAP ")
-	{
-		handleCapCommand(client, line);
-		return;
-	}
-
+	// if (line.size() >= 4 && line.substr(0, 4) == "CAP ")
+	// {
+	// 	handleCapCommand(client, line);
+	// 	return;
+	// }
 	if (client.getChannel() == NULL)
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")
