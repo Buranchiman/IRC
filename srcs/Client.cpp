@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/05/21 11:13:32 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/05/22 14:38:41 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void trim(std::string &s)
     }
 }
 
-Client::Client(): userName_(""), nickName_(""), pendingInput(""), hasUsername(false), hasNickname(false), hasWelcomeSent(false), fdSocket_(0), channel_(NULL)
+Client::Client(): userName_(""), nickName_(""), pendingInput_(""), hasUsername_(false), hasNickname_(false), hasCapStart_(false), hasCapEnd_(false), welcomeSent_(false), registered_(false), fdSocket_(-2), channel_(NULL)
 {
 	// std::cout << "Constructor Client" << std::endl;
 }
@@ -39,9 +39,9 @@ Client &Client::operator=(const Client &other)
 		this->userName_ = other.userName_;
 		this->nickName_ = other.nickName_;
 		this->fdSocket_ = other.fdSocket_;
-		this->hasUsername = other.hasUsername;
-		this->hasNickname = other.hasNickname;
-		this->hasWelcomeSent = other.hasWelcomeSent;
+		this->hasUsername_ = other.hasUsername_;
+		this->hasNickname_ = other.hasNickname_;
+		this->welcomeSent_ = other.welcomeSent_;
 		this->channel_ = other.channel_;
 	}
 	return (*this);
@@ -61,18 +61,18 @@ void Client::setFdSocket(int fd)
 void Client::setUserName(std::string username)
 {
 	this->userName_ = username;
-	this->hasUsername = true;
+	this->hasUsername_ = true;
 }
 
 void Client::setNickName(std::string nickname)
 {
 	this->nickName_ = nickname;
-	this->hasNickname = true;
+	this->hasNickname_ = true;
 }
 
 void Client::setReading(bool opt)
 {
-	this->hasUsername = opt;
+	this->hasUsername_ = opt;
 }
 
 void Client::reset()
@@ -81,16 +81,21 @@ void Client::reset()
 	this->userName_.clear();
 }
 
-void Client::setWelcomeSent(bool status)
+void Client::setwelcomeSent_(bool status)
 {
-	this->hasWelcomeSent = status;
+	this->welcomeSent_ = status;
+}
+
+void Client::setregistered_(bool status)
+{
+	registered_ = status;
 }
 
 // void Client::initialize(int fdSocket, const char *userName)
 // {
 // 	this->fdSocket_ = fdSocket;
 // 	this->userName_ = userName;
-// 	this->hasUsername = true;
+// 	this->hasUsername_ = true;
 // 	trim(this->userName_);
 // }
 //getter
@@ -112,22 +117,22 @@ std::string Client::getNickName() const
 
 bool Client::getNameStatus() const
 {
-	return (this->hasUsername);
+	return (this->hasUsername_);
 }
 
 bool Client::getNicknameStatus() const
 {
-	return (this->hasNickname);
+	return (this->hasNickname_);
 }
 
-bool Client::getWelcomeSentStatus() const
+bool Client::getwelcomeSent_Status() const
 {
-	return (this->hasWelcomeSent);
+	return (this->welcomeSent_);
 }
 
 std::string Client::getInput() const
 {
-	return (this->pendingInput);
+	return (this->pendingInput_);
 }
 
 Channel		*Client::getChannel() const
@@ -135,9 +140,24 @@ Channel		*Client::getChannel() const
 	return (channel_);
 }
 
+bool		Client::gethasCapStart_() const
+{
+	return (hasCapStart_);
+}
+
+bool		Client::gethasCapEnd_() const
+{
+	return (hasCapEnd_);
+}
+
+bool		Client::getregistered_() const
+{
+	return (registered_);
+}
+
 std::string &Client::accessBuffer()
 {
-	return (pendingInput);
+	return (pendingInput_);
 }
 
 Client	**Client::createPool(int maxClients)
@@ -161,6 +181,16 @@ void	Client::destroyPool(Client **clients, int maxClients)
 void Client::setChannel(Channel *channel)
 {
 	this->channel_ = channel;
+}
+
+void Client::setCapStart(bool status)
+{
+	hasCapStart_ = status;
+}
+
+void Client::setCapEnd(bool status)
+{
+	hasCapEnd_ = status;
 }
 
 void	Client::writeOnTerm(std::string message)
@@ -193,4 +223,10 @@ void send_all(int fd, const std::string &msg)
             return;
         sent += n;
     }
+}
+
+void Client::checkRegistration(void)
+{
+	if (hasUsername_ && hasNickname_ && hasCapEnd_ && hasCapStart_ && welcomeSent_)
+		registered_ = true;
 }
