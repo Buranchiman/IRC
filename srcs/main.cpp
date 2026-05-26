@@ -171,17 +171,20 @@ int main(int argc, char *argv[])
 						// Removed slow cout for performance
 						// std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
 							// Handle IRC protocol commands
+							bool isAuth = false;
 							if (!client[i - 1]->gethasCapStart_() && line.find("CAP LS") == 0)
 							{
 								// Send CAP response immediately
 								std::string cap = ":localhost CAP * LS :\r\n";
 								send_all(client[i - 1]->getFdSocket(), cap);
 								client[i - 1]->setCapStart(true);
+								isAuth = true;
 							}
 							else if (line.find("NICK ") == 0)
 							{
 								std::string nick = line.substr(5);
 								client[i - 1]->setNickName(nick);
+								isAuth = true;
 							}
 							else if (line.find("USER ") == 0)
 							{
@@ -190,9 +193,13 @@ int main(int argc, char *argv[])
 								if (space != std::string::npos)
 									user = user.substr(0, space);
 								client[i - 1]->setUserName(user);
+								isAuth = true;
 							}
 							if (!client[i - 1]->gethasCapEnd_() && line == "CAP END")
+							{
 								client[i - 1]->setCapEnd(true);
+								isAuth = true;
+							}
 							// Send welcome after NICK and USER are both set (only once)
 							if (!client[i - 1]->getwelcomeSent_Status() && client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus())
 							{
@@ -200,17 +207,20 @@ int main(int argc, char *argv[])
 								client[i - 1]->setwelcomeSent_(true);
 							}
 							// Handle other IRC commands only after auth complete
-							if (client[i - 1]->getregistered_())
-							{
-								void handleCommand(Client & client, const std::string &line, Commande &commande);
-								std::cout << "[" << client[i - 1]->getNickName() << "]" << std::endl;
-								handleCommand(*client[i - 1], line, commande);
-							}
-							else
-							{
-								send_all(client[i - 1]->getFdSocket(), "451\r\n");
-							}
 							client[i - 1]->checkRegistration();
+							if (!isAuth)
+							{
+								if (client[i - 1]->getregistered_())
+								{
+									void handleCommand(Client & client, const std::string &line, Commande &commande);
+									std::cout << "[" << client[i - 1]->getNickName() << "]" << std::endl;
+									handleCommand(*client[i - 1], line, commande);
+								}
+								else
+								{
+									send_all(client[i - 1]->getFdSocket(), "451\r\n");
+								}
+							}
 						}
                     }
 				}
