@@ -6,7 +6,7 @@
 /*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 16:12:08 by buranchiman       #+#    #+#             */
-/*   Updated: 2026/05/26 16:26:09 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/05/27 15:43:54 by buranchiman      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,13 @@ void WhoIs::execute(Client &client, const std::string &args)
         found->getUserName() + "\r\n";
 
     send_all(client.getFdSocket(), rpl311);
+
+    std::string rpl312 =
+    ":localhost 312 " +
+    client.getNickName() + " " +
+    found->getNickName() +
+    " localhost :Local IRC Server\r\n";
+    send_all(client.getFdSocket(), rpl312);
 
     std::string rpl318 =
         ":localhost 318 " +
