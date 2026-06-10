@@ -20,6 +20,7 @@
 #include "../includes/TopicCommand.hpp"
 #include "../includes/ModeCommand.hpp"
 #include "../includes/PrivMsg.hpp"
+#include "../includes/Who.hpp"
 #include "../includes/WhoIs.hpp"
 
 std::string parseCommandArg(const std::string &line, const std::string &prefix, std::string &remaining)
@@ -124,6 +125,14 @@ void handleWhoIsCommand(Client &client, const std::string &line, std::vector<Cha
 	cmd.execute(client, args);
 }
 
+void handleWhoCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
+{
+	std::string args;
+	parseCommandArg(line, "WHO ", args);
+	Who cmd(clients, channels);
+	cmd.execute(client, args);
+}
+
 void handleCommand(Client &client, const std::string &line, Commande &commande)
 {
 	std::vector<Channel> &channels = *commande.getChannels();
@@ -173,6 +182,10 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 		else if (line.size() >= 6 && line.substr(0, 6) == "WHOIS ")
 		{
 			handleWhoIsCommand(client, line, channels, clients);
+		}
+		else if (line.size() >= 4 && line.substr(0, 4) == "WHO ")
+		{
+			handleWhoCommand(client, line, channels, clients);
 		}
 	}
 }
