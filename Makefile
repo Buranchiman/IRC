@@ -21,7 +21,7 @@ INCLUDES		= $(wildcard $(INCLUDES_DIR)/*.hpp) \
 
 # Sources
 SRCS_DIR		= srcs/
-SRCS_FILES			= main.cpp Client.cpp Serveur.cpp Channel.cpp parsecommande.cpp handler.cpp commandhandler.cpp JoinCommand.cpp KickCommand.cpp InviteCommand.cpp TopicCommand.cpp ModeCommand.cpp PrivMsg.cpp WhoIs.cpp
+SRCS_FILES			= main.cpp Client.cpp Serveur.cpp Channel.cpp parsecommande.cpp handler.cpp commandhandler.cpp JoinCommand.cpp KickCommand.cpp InviteCommand.cpp TopicCommand.cpp ModeCommand.cpp PrivMsg.cpp Who.cpp WhoIs.cpp
 
 SRCS			= $(addprefix $(SRCS_DIR), $(SRCS_FILES))
 SRCS_BONUS		= $(addprefix $(SRCS_DIR), $(SRCS_MAIN_BONUS)) $(addprefix $(SRCS_DIR), $(SRCS_FILES))
