@@ -59,6 +59,8 @@ void handleClientInput(std::vector<Client> &clients, size_t clientIdx,
 {
 	Client &client = clients[clientIdx];
 	
+	std::cout << "[DEBUG] Reçu " << n << " bytes de " << client.getNickName() << std::endl;
+	
 	client.accessBuffer() += std::string(buffer, n);
 	
 	size_t pos;
@@ -74,7 +76,7 @@ void handleClientInput(std::vector<Client> &clients, size_t clientIdx,
 		
 		if (!line.empty())
 		{
-			std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
+			std::cout << "[COMMAND] " << client.getNickName() << ": " << line << std::endl;
 			handleClientLine(client, line, commande);
 		}
 	}

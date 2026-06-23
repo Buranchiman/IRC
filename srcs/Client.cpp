@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: chillichien <chillichien@student.42.fr>    +#+  +:+       +#+        */
+/*   By: luciendacunha <luciendacunha@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/05/18 12:23:12 by chillichien      ###   ########.fr       */
+/*   Updated: 2026/06/10 14:01:36 by luciendacun      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void trim(std::string &s)
     }
 }
 
-Client::Client(): userName_(""), nickName_(""), pendingInput(""), hasUsername(false), hasNickname(false), hasWelcomeSent(false), fdSocket_(0), channel_(NULL)
+Client::Client(): userName_(""), nickName_(""), pendingInput(""), pendingJoin_(""), hasUsername(false), hasNickname(false), hasWelcomeSent(false), fdSocket_(0), channels_()
 {
 	// std::cout << "Constructor Client" << std::endl;
 }
@@ -42,7 +42,8 @@ Client &Client::operator=(const Client &other)
 		this->hasUsername = other.hasUsername;
 		this->hasNickname = other.hasNickname;
 		this->hasWelcomeSent = other.hasWelcomeSent;
-		this->channel_ = other.channel_;
+		this->pendingJoin_ = other.pendingJoin_;
+		this->channels_ = other.channels_;
 	}
 	return (*this);
 }
@@ -84,6 +85,21 @@ void Client::reset()
 void Client::setWelcomeSent(bool status)
 {
 	this->hasWelcomeSent = status;
+}
+
+void Client::setPendingJoin(const std::string &line)
+{
+	this->pendingJoin_ = line;
+}
+
+void Client::clearPendingJoin()
+{
+	this->pendingJoin_.clear();
+}
+
+const std::string &Client::getPendingJoin() const
+{
+	return (this->pendingJoin_);
 }
 
 // void Client::initialize(int fdSocket, const char *userName)
@@ -130,11 +146,6 @@ std::string Client::getInput() const
 	return (this->pendingInput);
 }
 
-Channel		*Client::getChannel() const
-{
-	return (channel_);
-}
-
 std::string &Client::accessBuffer()
 {
 	return (pendingInput);
@@ -160,16 +171,57 @@ void	Client::destroyPool(Client **clients, int maxClients)
 
 void Client::setChannel(Channel *channel)
 {
-	this->channel_ = channel;
+	// Ajouter le canal à la liste si pas déjà présent
+	for (size_t i = 0; i < channels_.size(); ++i)
+	{
+		if (channels_[i] == channel)
+			return; // Déjà dans la liste
+	}
+	channels_.push_back(channel);
 }
 
-void	Client::writeOnTerm(std::string message)
+void Client::removeChannel(Channel *channel)
 {
-	if (channel_)
+	// Retirer le canal de la liste
+	for (std::vector<Channel *>::iterator it = channels_.begin(); it != channels_.end(); ++it)
 	{
-		//std::cout << "Channel of " << userName_ << " exists" << std::endl;
-		channel_->msgEveryone(*this, message);
+		if (*it == channel)
+		{
+			channels_.erase(it);
+			return;
+		}
 	}
+}
+
+void	Client::writeOnTerm(std::string message, Channel *channel)
+{
+	// Si un canal spécifique est fourni, envoyer à ce canal
+	if (channel)
+	{
+		channel->msgEveryone(*this, message);
+	}
+	else
+	{
+		// Sinon, envoyer à TOUS les canaux du client
+		for (size_t i = 0; i < channels_.size(); ++i)
+		{
+			if (channels_[i])
+				channels_[i]->msgEveryone(*this, message);
+		}
+	}
+}
+
+Channel *Client::getChannel() const
+{
+	// Retourner le premier canal (pour compatibilité)
+	if (channels_.empty())
+		return NULL;
+	return channels_[0];
+}
+
+const std::vector<Channel *> &Client::getChannels() const
+{
+	return channels_;
 }
 
 void send_all(int fd, const std::string &msg)

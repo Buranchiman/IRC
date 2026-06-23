@@ -12,9 +12,17 @@
 
 #include "../includes/ModeCommand.hpp"
 #include "../includes/Commande.hpp"
+#include "../includes/Client.hpp"
 #include <iostream>
 #include <unistd.h>
 #include <cstdlib>
+
+static void	sendModeList(Client &client, Channel &channel)
+{
+	std::string msg = ":localhost 324 " + client.getNickName() + " "
+		+ channel.getName() + " " + channel.getModeString() + "\r\n";
+	send_all(client.getFdSocket(), msg);
+}
 
 ModeCommand::ModeCommand(std::vector<Channel> &channels)
 	: channels_(&channels)
@@ -27,23 +35,33 @@ ModeCommand::~ModeCommand()
 
 void ModeCommand::execute(Client &client, const std::string &args)
 {
-	std::string mode, modeArgs;
-	parseMode(args, mode, modeArgs);
-	
-	std::cout << "[" << client.getNickName() << "] MODE " << mode << std::endl;
-	ModeCommand::mode(client, mode, modeArgs);
-}
+	std::string channel_name, mode_str, mode_args;
+	parseMode(args, channel_name, mode_str, mode_args);
 
-void ModeCommand::mode(Client &client, const std::string &mode_str, const std::string &args)
-{
-	Channel *channel = client.getChannel();
-	if (!channel)
+	if (channel_name.empty())
 	{
-		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
+		Channel *current = client.getChannel();
+		if (!current)
+			return;
+		channel_name = current->getName();
+	}
+
+	if (mode_str.empty())
+	{
+		for (size_t i = 0; i < channels_->size(); ++i)
+		{
+			if ((*channels_)[i].getName() != channel_name)
+				continue;
+			if (!(*channels_)[i].isMember(client))
+				return;
+			sendModeList(client, (*channels_)[i]);
+			return;
+		}
 		return;
 	}
-	mode(client, channel->getName(), mode_str, args);
+
+	std::cout << "[" << client.getNickName() << "] MODE " << channel_name << " " << mode_str << std::endl;
+	mode(client, channel_name, mode_str, mode_args);
 }
 
 void ModeCommand::mode(Client &client, const std::string &channel_name, const std::string &mode_str, const std::string &args)
@@ -65,6 +83,13 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 		return;
 	}
 
+	if (!channel->isMember(client))
+	{
+		std::string msg = "442 " + client.getNickName() + " " + channel_name + " :You're not on that channel\r\n";
+		write(client.getFdSocket(), msg.c_str(), msg.size());
+		return;
+	}
+
 	if (!channel->isOperator(client))
 	{
 		std::string msg = "482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
@@ -72,34 +97,28 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 		return;
 	}
 
-	bool add = true;
-	size_t current = 0;
-	if (mode_str.empty())
+	if (mode_str.empty() || mode_str[0] != '+')
+	{
+		std::string msg = "461 " + client.getNickName() + " MODE :Modes must start with +\r\n";
+		write(client.getFdSocket(), msg.c_str(), msg.size());
 		return;
-	
-	if (mode_str[0] == '+')
-	{
-		add = true;
-		current = 1;
-	}
-	else if (mode_str[0] == '-')
-	{
-		add = false;
-		current = 1;
 	}
 
+	size_t current = 1;
 	while (current < mode_str.length())
 	{
 		char mode = mode_str[current];
 		switch (mode)
 		{
 			case 't':
-				channel->setTopicRestricted(add);
-				std::cout << "[" << client.getNickName() << "] Set topic restriction: " << (add ? "ON" : "OFF") << std::endl;
+				channel->setTopicRestricted(!channel->isTopicRestricted());
+				std::cout << "[" << client.getNickName() << "] Topic restriction: "
+					<< (channel->isTopicRestricted() ? "ON" : "OFF") << std::endl;
 				break;
 			case 'i':
-				channel->setInviteOnly(add);
-				std::cout << "[" << client.getNickName() << "] Set invite only: " << (add ? "ON" : "OFF") << std::endl;
+				channel->setInviteOnly(!channel->isInviteOnly());
+				std::cout << "[" << client.getNickName() << "] Invite only: "
+					<< (channel->isInviteOnly() ? "ON" : "OFF") << std::endl;
 				break;
 			case 'o':
 			{
@@ -109,7 +128,7 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 					write(client.getFdSocket(), msg.c_str(), msg.size());
 					return;
 				}
-				
+
 				Client *target = channel->findClientByNickname(args);
 				if (!target)
 				{
@@ -117,22 +136,27 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 					write(client.getFdSocket(), msg.c_str(), msg.size());
 					return;
 				}
-				
-				if (add)
+
+				if (channel->isOperator(*target))
 				{
-					channel->addOperator(*target);
-					std::cout << "[" << client.getNickName() << "] MODE +o " << args << std::endl;
+					channel->removeOperator(*target);
+					std::cout << "[" << client.getNickName() << "] MODE +o (off) " << args << std::endl;
 				}
 				else
 				{
-					channel->removeOperator(*target);
-					std::cout << "[" << client.getNickName() << "] MODE -o " << args << std::endl;
+					channel->addOperator(*target);
+					std::cout << "[" << client.getNickName() << "] MODE +o (on) " << args << std::endl;
 				}
 				break;
 			}
 			case 'k':
 			{
-				if (add)
+				if (channel->hasPassword())
+				{
+					channel->removePassword();
+					std::cout << "[" << client.getNickName() << "] MODE +k (off)" << std::endl;
+				}
+				else
 				{
 					if (args.empty())
 					{
@@ -141,18 +165,18 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 						return;
 					}
 					channel->setPassword(args);
-					std::cout << "[" << client.getNickName() << "] MODE +k " << args << std::endl;
-				}
-				else
-				{
-					channel->removePassword();
-					std::cout << "[" << client.getNickName() << "] MODE -k" << std::endl;
+					std::cout << "[" << client.getNickName() << "] MODE +k (on) " << args << std::endl;
 				}
 				break;
 			}
 			case 'l':
 			{
-				if (add)
+				if (channel->hasUserLimit())
+				{
+					channel->removeUserLimit();
+					std::cout << "[" << client.getNickName() << "] MODE +l (off)" << std::endl;
+				}
+				else
 				{
 					if (args.empty())
 					{
@@ -168,12 +192,7 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 						return;
 					}
 					channel->setUserLimit(limit);
-					std::cout << "[" << client.getNickName() << "] MODE +l " << limit << std::endl;
-				}
-				else
-				{
-					channel->removeUserLimit();
-					std::cout << "[" << client.getNickName() << "] MODE -l" << std::endl;
+					std::cout << "[" << client.getNickName() << "] MODE +l (on) " << limit << std::endl;
 				}
 				break;
 			}

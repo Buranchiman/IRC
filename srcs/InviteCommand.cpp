@@ -23,23 +23,33 @@ InviteCommand::InviteCommand(std::vector<Channel> &channels, std::vector<Client 
 InviteCommand::~InviteCommand()
 {
 }
-
+//parse les arguments
 void InviteCommand::execute(Client &client, const std::string &args)
 {
-	std::cout << "[" << client.getNickName() << "] INVITE " << args << std::endl;
-	invite(client, args);
-}
+	std::string target_nick, channel_name;
+	parseInvite(args, target_nick, channel_name);
 
-void InviteCommand::invite(Client &client, const std::string &target_name)
-{
-	Channel *channel = client.getChannel();
-	if (!channel)
+	if (target_nick.empty())
 	{
-		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
+		std::string msg = "461 " + client.getNickName() + " INVITE :Not enough parameters\r\n";
 		write(client.getFdSocket(), msg.c_str(), msg.size());
 		return;
 	}
-	invite(client, channel->getName(), target_name);
+
+	if (channel_name.empty())
+	{
+		Channel *current = client.getChannel();
+		if (!current)
+		{
+			std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
+			write(client.getFdSocket(), msg.c_str(), msg.size());
+			return;
+		}
+		channel_name = current->getName();
+	}
+
+	std::cout << "[" << client.getNickName() << "] INVITE " << target_nick << " " << channel_name << std::endl;
+	invite(client, channel_name, target_nick);
 }
 
 void InviteCommand::invite(Client &client, const std::string &channel_name, const std::string &target_name)
@@ -69,11 +79,9 @@ void InviteCommand::invite(Client &client, const std::string &channel_name, cons
 	}
 
 	Client *target = NULL;
-	std::string target_nick = target_name;
-
 	for (size_t i = 0; i < clients_.size(); ++i)
 	{
-		if (clients_[i]->getNickName() == target_nick)
+		if (clients_[i]->getNickName() == target_name)
 		{
 			target = clients_[i];
 			break;
@@ -87,10 +95,14 @@ void InviteCommand::invite(Client &client, const std::string &channel_name, cons
 		return;
 	}
 
-	std::string msg = "You have been invited to " + channel_name + " by " + client.getNickName() + "\r\n";
-
 	channel->addInvite(*target);
-	write(target->getFdSocket(), msg.c_str(), msg.size());
 
-	std::cout << "[" << client.getNickName() << "] INVITE #" << channel_name << " " << target_name << std::endl;
+	std::string inviteNotice = ":" + client.getNickName() + "!" + client.getUserName()
+		+ "@localhost INVITE " + target_name + " :" + channel_name + "\r\n";
+	write(target->getFdSocket(), inviteNotice.c_str(), inviteNotice.size());
+
+	std::string msg = "341 " + client.getNickName() + " " + target_name + " " + channel_name + "\r\n";
+	write(client.getFdSocket(), msg.c_str(), msg.size());
+
+	std::cout << "[INVITE] " << client.getNickName() << " invited " << target_name << " to " << channel_name << std::endl;
 }

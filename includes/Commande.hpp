@@ -57,17 +57,20 @@ void parseJoin(const std::string &args, std::string &channelName, std::string &p
  * @param reason Reference to store kick reason (optional)
  * @return void
  */
-void parseKick(const std::string &args, std::string &target, std::string &reason);
+void parseKick(const std::string &args, std::string &channel, std::string &target, std::string &reason);
 
 /**
  * @brief Parse MODE command arguments
  *
  * @param args Raw arguments string from MODE command
- * @param mode Reference to store mode string (+i, -k, etc)
- * @param modeArgs Reference to store mode arguments (password, limit, etc)
+ * @param channel Reference to store channel name (#channel)
+ * @param mode Reference to store mode string (+i, +o, etc)
+ * @param modeArgs Reference to store mode arguments (password, limit, nick, etc)
  * @return void
  */
-void parseMode(const std::string &args, std::string &mode, std::string &modeArgs);
+void parseMode(const std::string &args, std::string &channel, std::string &mode, std::string &modeArgs);
+
+void parseInvite(const std::string &args, std::string &target, std::string &channel);
 
 /**
  * @brief Parse TOPIC command arguments

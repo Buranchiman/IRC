@@ -20,6 +20,9 @@ private:
 	std::vector<Client *> clients_;
 	std::vector<Client *> operators_;
 	std::vector<Client *> invited_;
+
+	void	transferOperatorIfNeeded();
+
 public:
 	Channel();
 	Channel(std::string name, std::string topic);
@@ -52,12 +55,14 @@ public:
 	bool hasUserLimit() const;
 	int getUserLimit() const;
 	bool isUserLimitReached() const;
+	std::string	getModeString() const;
 
 	// Operator management
 	bool isOperator(Client &client);
 	void addOperator(Client &client);
 	void removeOperator(Client &client);
 	Client* findClientByNickname(std::string const &nickname);
+	bool	isMember(Client &client) const;
 
 	// Invite management
 	bool isInvited(Client &client);

@@ -1,4 +1,7 @@
-#include "Channel.hpp"
+#include "../includes/Channel.hpp"
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
 
 Channel::Channel() : name_(""), topic_(""), password_(""), _topicRestricted(false), _inviteOnly(false), _userLimit(-1), clients_(), operators_(), invited_()
 {}
@@ -28,25 +31,56 @@ Channel& Channel::operator=(const Channel& other) {
 
 Channel::~Channel() {
 }
+// donne le role operator automatiquement au premier si il ny a pas d'operateur
+void	Channel::transferOperatorIfNeeded()
+{
+	if (!operators_.empty() || clients_.empty())
+		return;
+
+	Client *oldest = clients_[0];
+	operators_.push_back(oldest);
+
+	std::cout << "[CHANNEL] " << oldest->getNickName()
+		<< " is now operator on " << name_ << " (oldest member)" << std::endl;
+}
 
 void	Channel::join(Client &client)
 {
+	bool	alreadyMember = false;
+
 	for (unsigned long i = 0; i < clients_.size(); ++i)
 	{
 		if (clients_[i] == &client)
-			return ;
+		{
+			alreadyMember = true;
+			break;
+		}
 	}
-	clients_.push_back(&client);
-	// Le premier client qui rejoint le canal devient opérateur
-	if (operators_.empty())
-		operators_.push_back(&client);
-	else if (client.getUserName() == "operator")
-		operators_.push_back(&client);
+	if (!alreadyMember)
+	{
+		clients_.push_back(&client);
+		transferOperatorIfNeeded();
+		if (client.getUserName() == "operator" && !isOperator(client))
+			addOperator(client);
+	}
 	client.setChannel(this);
 }
 //ajiout commande
 void	Channel::leave(Client &client)
 {
+	// Notifier les autres clients que ce client quitte le canal
+	std::string partMsg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost PART " + name_ + "\r\n";
+	std::cout << "[PART] " << client.getNickName() << " leaving " << name_ << " - notifying " << clients_.size() << " members" << std::endl;
+	for (unsigned long i = 0; i < clients_.size(); ++i)
+	{
+		if (clients_[i] != &client)
+		{
+			std::cout << "  -> Sending PART to " << clients_[i]->getNickName() << std::endl;
+			send(clients_[i]->getFdSocket(), partMsg.c_str(), partMsg.size(), MSG_NOSIGNAL);
+		}
+	}
+	
+	// Retirer le client de la liste des membres
 	for (std::vector<Client *>::iterator it = clients_.begin(); it != clients_.end(); ++it)
 	{
 		if (*it == &client)
@@ -55,6 +89,8 @@ void	Channel::leave(Client &client)
 			break ;
 		}
 	}
+	
+	// Retirer le client de la liste des opérateurs
 	for (std::vector<Client *>::iterator it = operators_.begin(); it != operators_.end(); ++it)
 	{
 		if (*it == &client)
@@ -63,6 +99,19 @@ void	Channel::leave(Client &client)
 			break ;
 		}
 	}
+	
+	// Retirer le client de la liste des invitations
+	for (std::vector<Client *>::iterator it = invited_.begin(); it != invited_.end(); ++it)
+	{
+		if (*it == &client)
+		{
+			invited_.erase(it);
+			break ;
+		}
+	}
+	
+	client.removeChannel(this);
+	transferOperatorIfNeeded();
 }
 
 void	Channel::msgEveryone(Client &sender, std::string msg)
@@ -162,6 +211,8 @@ void Channel::removeOperator(Client &client)
 		if (*it == &client)
 		{
 			operators_.erase(it);
+			// si l'op ce remove tout seul en securiter
+			transferOperatorIfNeeded();
 			return;
 		}
 	}
@@ -177,6 +228,16 @@ Client* Channel::findClientByNickname(std::string const &nickname)
 		}
 	}
 	return NULL;
+}
+
+bool Channel::isMember(Client &client) const
+{
+	for (size_t i = 0; i < clients_.size(); ++i)
+	{
+		if (clients_[i] == &client)
+			return (true);
+	}
+	return (false);
 }
 
 void Channel::setInviteOnly(bool mode)
@@ -269,6 +330,20 @@ bool Channel::isUserLimitReached() const
 	if (!hasUserLimit())
 		return false;
 	return (int)clients_.size() >= _userLimit;
+}
+
+std::string Channel::getModeString() const
+{
+	std::string modes = "+";
+	if (_inviteOnly)
+		modes += "i";
+	if (_topicRestricted)
+		modes += "t";
+	if (hasPassword())
+		modes += "k";
+	if (hasUserLimit())
+		modes += "l";
+	return (modes);
 }
 
 const std::vector<Client*> &Channel::getMembers() const

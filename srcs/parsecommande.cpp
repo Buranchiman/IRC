@@ -16,7 +16,13 @@ void parseJoin(const std::string &args, std::string &channelName, std::string &p
 {
 	size_t sep = args.find(' ');
 	channelName = args.substr(0, sep != std::string::npos ? sep : args.length());
-	
+
+	size_t comma = channelName.find(',');
+	if (comma != std::string::npos)
+		channelName = channelName.substr(0, comma);
+	while (!channelName.empty() && channelName[0] == ' ')
+		channelName.erase(0, 1);
+
 	password = "";
 	if (sep != std::string::npos)
 	{
@@ -26,32 +32,105 @@ void parseJoin(const std::string &args, std::string &channelName, std::string &p
 	}
 }
 
-void parseKick(const std::string &args, std::string &target, std::string &reason)
+void parseKick(const std::string &args, std::string &channel, std::string &target, std::string &reason)
 {
-	size_t space = args.find(' ');
-	target = args.substr(0, space != std::string::npos ? space : args.length());
-	
+	size_t pos = 0;
+	while (pos < args.size() && args[pos] == ' ')
+		pos++;
+
+	size_t space1 = args.find(' ', pos);
+	channel = args.substr(pos, space1 != std::string::npos ? space1 - pos : args.size() - pos);
+
+	target = "";
 	reason = "";
-	if (space != std::string::npos)
-	{
-		reason = args.substr(space + 1);
-		while (!reason.empty() && reason[0] == ' ')
-			reason.erase(0, 1);
-	}
+	if (space1 == std::string::npos)
+		return;
+
+	pos = space1 + 1;
+	while (pos < args.size() && args[pos] == ' ')
+		pos++;
+
+	size_t space2 = args.find(' ', pos);
+	target = args.substr(pos, space2 != std::string::npos ? space2 - pos : args.size() - pos);
+
+	if (space2 == std::string::npos)
+		return;
+
+	reason = args.substr(space2 + 1);
+	while (!reason.empty() && reason[0] == ' ')
+		reason.erase(0, 1);
+	if (!reason.empty() && reason[0] == ':')
+		reason = reason.substr(1);
 }
 
-void parseMode(const std::string &args, std::string &mode, std::string &modeArgs)
+static void	trimArg(std::string &s)
 {
-	size_t space = args.find(' ');
-	mode = args.substr(0, space != std::string::npos ? space : args.length());
-	
+	while (!s.empty() && s[0] == ' ')
+		s.erase(0, 1);
+	if (!s.empty() && s[0] == ':')
+		s = s.substr(1);
+}
+
+void parseMode(const std::string &args, std::string &channel, std::string &mode, std::string &modeArgs)
+{
+	size_t pos = 0;
+	while (pos < args.size() && args[pos] == ' ')
+		pos++;
+
+	channel = "";
+	mode = "";
 	modeArgs = "";
-	if (space != std::string::npos)
+	if (pos >= args.size())
+		return;
+
+	/* MODE +i [args]  (Irssi depuis la fenêtre du canal) */
+	if (args[pos] == '+')
 	{
+		size_t space = args.find(' ', pos);
+		mode = args.substr(pos, space != std::string::npos ? space - pos : args.size() - pos);
+		if (space == std::string::npos)
+			return;
 		modeArgs = args.substr(space + 1);
-		while (!modeArgs.empty() && modeArgs[0] == ' ')
-			modeArgs.erase(0, 1);
+		trimArg(modeArgs);
+		return;
 	}
+
+	/* MODE #channel +flags [args] */
+	size_t space1 = args.find(' ', pos);
+	channel = args.substr(pos, space1 != std::string::npos ? space1 - pos : args.size() - pos);
+	if (space1 == std::string::npos)
+		return;
+
+	pos = space1 + 1;
+	while (pos < args.size() && args[pos] == ' ')
+		pos++;
+
+	size_t space2 = args.find(' ', pos);
+	mode = args.substr(pos, space2 != std::string::npos ? space2 - pos : args.size() - pos);
+	if (space2 == std::string::npos)
+		return;
+
+	modeArgs = args.substr(space2 + 1);
+	trimArg(modeArgs);
+}
+
+void parseInvite(const std::string &args, std::string &target, std::string &channel)
+{
+	size_t pos = 0;
+	while (pos < args.size() && args[pos] == ' ')
+		pos++;
+
+	size_t space1 = args.find(' ', pos);
+	target = args.substr(pos, space1 != std::string::npos ? space1 - pos : args.size() - pos);
+	if (space1 == std::string::npos)
+		return;
+
+	pos = space1 + 1;
+	while (pos < args.size() && args[pos] == ' ')
+		pos++;
+
+	channel = args.substr(pos);
+	trimArg(channel);
 }
 
 void parseTopic(const std::string &args, std::string &topic)

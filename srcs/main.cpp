@@ -22,12 +22,15 @@ void error(const char *msg)
 	exit(1);
 }
 
+void handleCommand(Client &client, const std::string &line, Commande &commande);
+
 // Forward declarations for handlers
 void handleNewConnection(int sockfd, struct sockaddr_in &cli_addr, socklen_t &clilen,
 						 struct pollfd *fds, std::vector<Client> &clients, int maxClients);
 void handleClientDisconnection(struct pollfd *fds, std::vector<Client> &clients, size_t clientIdx);
 void handleClientInput(std::vector<Client> &clients, size_t clientIdx,
 					   char *buffer, int n, Commande &commande);
+void handleCommand(Client &client, const std::string &line, Commande &commande);
 
 pollfd    newPoll(int fd)
 {
@@ -89,11 +92,8 @@ int main(int argc, char *argv[])
      std::vector<Channel> channels;
 
 	 client.reserve(maxClients);
-	 channels.reserve(20);
+	 channels.reserve(200);
 
-
-     channels.push_back(Channel("test", "Just a test channel"));
-     channels.push_back(Channel("students", "a channel dedicated to exchanging between students"));
 
 	channels.push_back(Channel("#test", "Just a test channel"));
 	channels.push_back(Channel("#students", "a channel dedicated to exchanging between students"));
@@ -149,7 +149,6 @@ int main(int argc, char *argv[])
 				if ((fds[i].revents & POLLIN) && fds[i].fd != -2)
 				{
 					n = read(fds[i].fd, buffer, 255);
-					printf("recv %i bytes\n", n);
 					if (n < 0)
 					{
 						if (errno != EAGAIN && errno != EWOULDBLOCK)
@@ -203,19 +202,28 @@ int main(int argc, char *argv[])
 								client[i - 1]->setUserName(user);
 								isAuthCommand = true;
 							}
+							else if (line.find("JOIN ") == 0
+								&& (!client[i - 1]->getNicknameStatus()
+									|| !client[i - 1]->getNameStatus()))
+							{
+								client[i - 1]->setPendingJoin(line);
+								continue;
+							}
 
-						// Send welcome after NICK and USER are both set (only once)
-						if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && !client[i - 1]->getWelcomeSentStatus())
+						if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus()
+							&& !client[i - 1]->getWelcomeSentStatus())
 						{
 							sendWelcome(client[i - 1]);
 							client[i - 1]->setWelcomeSent(true);
-							}
-							// Handle other IRC commands only after auth complete
-							else if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && !isAuthCommand)
+							if (!client[i - 1]->getPendingJoin().empty())
 							{
-								void handleCommand(Client & client, const std::string &line, Commande &commande);
-								handleCommand(*client[i - 1], line, commande);
+								handleCommand(*client[i - 1], client[i - 1]->getPendingJoin(), commande);
+								client[i - 1]->clearPendingJoin();
 							}
+						}
+						if (client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus()
+							&& !isAuthCommand)
+							handleCommand(*client[i - 1], line, commande);
 
 						}
                     }
