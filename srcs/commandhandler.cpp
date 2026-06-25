@@ -44,41 +44,41 @@ void handleJoinCommand(Client &client, const std::string &line, std::vector<Chan
 	cmd.execute(client, args);
 }
 
-void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
-{
-	std::string args;
-	parseCommandArg(line, "KICK ", args);
+// void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+// {
+// 	std::string args;
+// 	parseCommandArg(line, "KICK ", args);
 
-	KickCommand cmd(channels);
-	cmd.execute(client, args);
-}
+// 	KickCommand cmd(channels);
+// 	cmd.execute(client, args);
+// }
 
-void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
-{
-	std::string args;
-	parseCommandArg(line, "INVITE ", args);
+// void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
+// {
+// 	std::string args;
+// 	parseCommandArg(line, "INVITE ", args);
 
-	InviteCommand cmd(channels, clients);
-	cmd.execute(client, args);
-}
+// 	InviteCommand cmd(channels, clients);
+// 	cmd.execute(client, args);
+// }
 
-void handleTopicCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
-{
-	std::string args;
-	parseCommandArg(line, "TOPIC ", args);
+// void handleTopicCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+// {
+// 	std::string args;
+// 	parseCommandArg(line, "TOPIC ", args);
 
-	TopicCommand cmd(channels);
-	cmd.execute(client, args);
-}
+// 	TopicCommand cmd(channels);
+// 	cmd.execute(client, args);
+// }
 
-void handleModeCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
-{
-	std::string args;
-	parseCommandArg(line, "MODE ", args);
+// void handleModeCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+// {
+// 	std::string args;
+// 	parseCommandArg(line, "MODE ", args);
 
-	ModeCommand cmd(channels);
-	cmd.execute(client, args);
-}
+// 	ModeCommand cmd(channels);
+// 	cmd.execute(client, args);
+// }
 
 void handlePingCommand(Client &client, const std::string &line)
 {
@@ -165,14 +165,14 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")
 			handleJoinCommand(client, line, channels);
-		else if (line.size() >= 5 && line.substr(0, 5) == "KICK ")
-			handleKickCommand(client, line, channels);
-		else if (line.size() >= 7 && line.substr(0, 7) == "INVITE ")
-			handleInviteCommand(client, line, channels, clients);
-		else if (line.size() >= 6 && line.substr(0, 6) == "TOPIC ")
-			handleTopicCommand(client, line, channels);
-		else if (line.size() >= 5 && line.substr(0, 5) == "MODE ")
-			handleModeCommand(client, line, channels);
+		// else if (line.size() >= 5 && line.substr(0, 5) == "KICK ")
+		// 	handleKickCommand(client, line, channels);
+		// else if (line.size() >= 7 && line.substr(0, 7) == "INVITE ")
+		// 	handleInviteCommand(client, line, channels, clients);
+		// else if (line.size() >= 6 && line.substr(0, 6) == "TOPIC ")
+		// 	handleTopicCommand(client, line, channels);
+		// else if (line.size() >= 5 && line.substr(0, 5) == "MODE ")
+		// 	handleModeCommand(client, line, channels);
 		else if (line.size() >= 8 && line.substr(0, 8) == "PRIVMSG ")
 		{
 			// Removed slow cout for performance

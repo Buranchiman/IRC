@@ -55,7 +55,7 @@ public:
 	bool gethasCapEnd_() const;
 	bool getregistered_() const;
 	std::string getInput() const;
-	std::vector<Channel *> getChannels() const;
+	std::vector<Channel *> &getChannels();
 
 	std::string	&accessBuffer();
 	static Client	**createPool(int maxClients);

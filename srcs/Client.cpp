@@ -7,7 +7,8 @@
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
 <<<<<<< HEAD
-/*   Updated: 2026/06/25 15:49:07 by luda-cun         ###   ########.fr       */
+<<<<<<< HEAD
+/*   Updated: 2026/06/25 17:02:34 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +137,7 @@ std::string Client::getInput() const
 	return (this->pendingInput_);
 }
 
-std::vector<Channel *> Client::getChannels() const
+std::vector<Channel *> &Client::getChannels()
 {
 	return (channels_);
 }
