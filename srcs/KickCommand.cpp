@@ -45,6 +45,7 @@ void KickCommand::kick(Client &client, const std::string &target_name, const std
 		write(client.getFdSocket(), msg.c_str(), msg.size());
 		return;
 	}
+	std::cout << "[" << client.getNickName() << "] KICK " << channel->getName() << " " << target_name << std::endl;
 	kick(client, channel->getName(), target_name, reason);
 }
 
@@ -59,12 +60,14 @@ void KickCommand::kick(Client &client, const std::string &channel_name, const st
 			break;
 		}
 	}
+	// si le channel n'existe pas, on envoie une erreur au client
 	if (!channel)
 	{
 		std::string msg = "403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
 		write(client.getFdSocket(), msg.c_str(), msg.size());
 		return;
 	}
+	// si le client n'est pas opérateur du channel, on envoie une erreur au client
 	if (!channel->isOperator(client))
 	{
 		std::string msg = "482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
@@ -72,6 +75,8 @@ void KickCommand::kick(Client &client, const std::string &channel_name, const st
 		return;
 	}
 	Client *target = channel->findClientByNickname(target_name);
+	
+	//si le client cible n'est pas dans le channel, on envoie une erreur au client par rapport au nickname
 	if (!target)
 	{
 		std::string msg = "401 " + client.getNickName() + " " + target_name + " :No such nick/channel\r\n";

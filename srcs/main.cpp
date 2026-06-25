@@ -63,7 +63,7 @@ void sendWelcome(Client *client)
 	// Send welcome messages (CAP is sent separately when CAP command is received)
 	std::string msg1 = ":localhost 001 " + nick + " :Welcome to IRC server " + nick + "!" + user + "@localhost\r\n";
 	send(fd, msg1.c_str(), msg1.size(), MSG_NOSIGNAL);
-
+	
 	std::string msg2 = ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n";
 	send(fd, msg2.c_str(), msg2.size(), MSG_NOSIGNAL);
 
