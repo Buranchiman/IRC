@@ -36,7 +36,10 @@ public:
 	void setReading(bool opt);
 	void reset();
 	void initialize(int fdSocket, const char *userName);
-	void setChannel(Channel *channel);
+	void addChannel(Channel *channel);
+	void suppChannel(Channel *channel);
+
+	// void setChannel(Channel *channel);
 	void setwelcomeSent_(bool status);
 	void setCapStart(bool status);
 	void setCapEnd(bool status);

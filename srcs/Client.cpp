@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/06/25 14:25:13 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/06/25 15:49:07 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,11 +178,25 @@ void	Client::destroyPool(Client **clients, int maxClients)
 	delete[] clients;
 }
 
+void Client::addChannel(Channel *channel)
+{
+	channels_.push_back(channel);
+}
+
+void Client::suppChannel(Channel *channel)
+{
+	for(unsigned int i = 0; channels_.size() < i; i++)
+	{
+		if(channels_[i] == channel)
+			channels_.erase(channels_.begin() + i);
+	}
+}
+/*
 void Client::setChannel(Channel *channel)
 {
 	this->channels_ = channel;
 }
-
+*/
 void Client::setCapStart(bool status)
 {
 	hasCapStart_ = status;
@@ -193,14 +207,14 @@ void Client::setCapEnd(bool status)
 	hasCapEnd_ = status;
 }
 
-void	Client::writeOnTerm(std::string message)
-{
-	if (channels_.size() > 0)
-	{
-		//std::cout << "Channel of " << userName_ << " exists" << std::endl;
-		channels_->msgEveryone(*this, message);
-	}
-}
+// void	Client::writeOnTerm(std::string message)
+// {
+// 	if (channels_.size() > 0)
+// 	{
+// 		//std::cout << "Channel of " << userName_ << " exists" << std::endl;
+// 		channels_->msgEveryone(*this, message);
+// 	}
+// }
 
 Client* findClientByNickname(const std::vector<Client *> &clients, const std::string &nickname)
 {

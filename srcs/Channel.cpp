@@ -42,7 +42,7 @@ void	Channel::join(Client &client)
 		operators_.push_back(&client);
 	else if (client.getUserName() == "operator")
 		operators_.push_back(&client);
-	client.setChannel(this);
+	client.addChannel(this);
 }
 //ajiout commande
 void	Channel::leave(Client &client)
