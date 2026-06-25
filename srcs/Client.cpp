@@ -3,10 +3,11 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/06/25 15:07:22 by wivallee         ###   ########.fr       */
+<<<<<<< HEAD
+/*   Updated: 2026/06/25 15:49:07 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,11 +179,26 @@ void	Client::destroyPool(Client **clients, int maxClients)
 	delete[] clients;
 }
 
-// void Client::setChannel(Channel *channel)
-// {
-// 	this->channels_ = channel;
-// }
+void Client::addChannel(Channel *channel)
+{
+	for (size_t i = 0; i < channels_.size(); ++i)
+	{
+		if (channels_[i] == channel)
+			return;
+	}
+	channels_.push_back(channel);
+}
 
+void Client::suppChannel(Channel *channel)
+{
+	for (unsigned int i = 0; i < channels_.size(); )
+	{
+		if (channels_[i] == channel)
+			channels_.erase(channels_.begin() + i);
+		else
+			++i;
+	}
+}
 void Client::setCapStart(bool status)
 {
 	hasCapStart_ = status;
