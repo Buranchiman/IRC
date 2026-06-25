@@ -149,7 +149,7 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 	// 	handleCapCommand(client, line);
 	// 	return;
 	// }
-	if (client.getChannel() == NULL)
+	if (client.getChannels().empty())
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")
 		{

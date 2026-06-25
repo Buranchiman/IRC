@@ -44,9 +44,11 @@ void handleNewConnection(int sockfd, struct sockaddr_in &cli_addr, socklen_t &cl
 
 void handleClientDisconnection(struct pollfd *fds, std::vector<Client> &clients, size_t clientIdx)
 {
-	if (clients[clientIdx].getChannel() != NULL)
-		clients[clientIdx].getChannel()->leave(clients[clientIdx]);
-	
+	if (clients[clientIdx].getChannels().size() > 0)
+	{
+		for (std::vector<Channel *>::iterator it = clients[clientIdx].getChannels().begin(); it != clients[clientIdx].getChannels().end(); ++it)
+			(*it)->leave(clients[clientIdx]);
+	}
 	close(fds[clientIdx + 1].fd);
 	fds[clientIdx + 1].fd = -2;
 	clients.erase(clients.begin() + clientIdx);
