@@ -22,7 +22,7 @@ private:
 	bool		welcomeSent_;
 	bool		registered_;
 	int 		fdSocket_;
-	Channel		*channel_;
+	std::vector<Channel *>		channels_;
 public:
 	Client();
 	Client(const Client &other);
@@ -52,7 +52,7 @@ public:
 	bool gethasCapEnd_() const;
 	bool getregistered_() const;
 	std::string getInput() const;
-	Channel		*getChannel() const;
+	std::vector<Channel *> getChannels() const;
 
 	std::string	&accessBuffer();
 	static Client	**createPool(int maxClients);

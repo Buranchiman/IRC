@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/05/22 14:38:41 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/06/25 14:25:13 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void trim(std::string &s)
     }
 }
 
-Client::Client(): userName_(""), nickName_(""), pendingInput_(""), hasUsername_(false), hasNickname_(false), hasCapStart_(false), hasCapEnd_(false), welcomeSent_(false), registered_(false), fdSocket_(-2), channel_(NULL)
+Client::Client(): userName_(""), nickName_(""), pendingInput_(""), hasUsername_(false), hasNickname_(false), hasCapStart_(false), hasCapEnd_(false), welcomeSent_(false), registered_(false), fdSocket_(-2), channels_()
 {
 	// std::cout << "Constructor Client" << std::endl;
 }
@@ -42,7 +42,7 @@ Client &Client::operator=(const Client &other)
 		this->hasUsername_ = other.hasUsername_;
 		this->hasNickname_ = other.hasNickname_;
 		this->welcomeSent_ = other.welcomeSent_;
-		this->channel_ = other.channel_;
+		this->channels_ = other.channels_;
 	}
 	return (*this);
 }
@@ -135,9 +135,9 @@ std::string Client::getInput() const
 	return (this->pendingInput_);
 }
 
-Channel		*Client::getChannel() const
+std::vector<Channel *> Client::getChannels() const
 {
-	return (channel_);
+	return (channels_);
 }
 
 bool		Client::gethasCapStart_() const
@@ -180,7 +180,7 @@ void	Client::destroyPool(Client **clients, int maxClients)
 
 void Client::setChannel(Channel *channel)
 {
-	this->channel_ = channel;
+	this->channels_ = channel;
 }
 
 void Client::setCapStart(bool status)
@@ -195,10 +195,10 @@ void Client::setCapEnd(bool status)
 
 void	Client::writeOnTerm(std::string message)
 {
-	if (channel_)
+	if (channels_.size() > 0)
 	{
 		//std::cout << "Channel of " << userName_ << " exists" << std::endl;
-		channel_->msgEveryone(*this, message);
+		channels_->msgEveryone(*this, message);
 	}
 }
 
