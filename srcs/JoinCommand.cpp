@@ -60,9 +60,10 @@ void JoinCommand::join(Client &client, const std::string &channel_name, const st
 				send_all(client.getFdSocket(), msg);
 				return;
 			}
-			Channel *current = client.getChannel();
-			if (current && current != &(*it))
-				current->leave(client);
+			// if (current && current != &(*it))
+			// 	current->leave(client);
+			if ((*it).findClientByNickname(client.getNickName()))
+				return ;
 			it->join(client);
 			it->removeInvite(client);
 

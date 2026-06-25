@@ -161,8 +161,14 @@ int main(int argc, char *argv[])
 					printf("recv %i bytes\n", n);
 					if (n < 0)
 					{
-						if (errno != EAGAIN && errno != EWOULDBLOCK)
-							error("ERROR reading from socket");
+
+						// if (errno != EAGAIN && errno != EWOULDBLOCK)
+						// 	error("ERROR reading from socket");
+						std::cout << "destructor Client" << std::endl;
+						close(fds[i].fd); //on ferme le fd
+                        fds.erase(fds.begin() + i); //on erase le pollfd du vecteur
+                        eraseClient(client, client[i - 1]);
+						i--;
 						continue;
 					}
 

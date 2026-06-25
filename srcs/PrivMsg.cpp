@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/06/25 15:05:28 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/06/25 16:55:26 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,15 @@ void PrivMsg::message(Client &client, const std::string &msg)
 	if (!target.empty() && target[0] == '#')
 	{
 		Channel *channel = NULL;
-		for (std::vector<Channel *>::iterator it = client.getChannels().begin(); it != client.getChannels().end(); ++it)
+		// if (client.getChannels().size() == 1)
+		// {
+		// 	if (client.getChannels()[0]->getName() == target)
+		// 		channel = client.getChannels()[0];
+		// }
+		for (std::vector<Channel *>::iterator it = client.getChannels().begin(); it != client.getChannels().end(); it++)
 		{
+			std::cout << "Entered for" << std::endl;
+			std::cout << "Current channel name is " << (*it)->getName() << std::endl;
 			if ((*it)->getName() == target)
 				channel = *it;
 		}
