@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/06/25 15:07:22 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/06/25 15:51:39 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,11 +178,25 @@ void	Client::destroyPool(Client **clients, int maxClients)
 	delete[] clients;
 }
 
-// void Client::setChannel(Channel *channel)
-// {
-// 	this->channels_ = channel;
-// }
+void Client::addChannel(Channel *channel)
+{
+	channels_.push_back(channel);
+}
 
+void Client::suppChannel(Channel *channel)
+{
+	for(unsigned int i = 0; channels_.size() < i; i++)
+	{
+		if(channels_[i] == channel)
+			channels_.erase(channels_.begin() + i);
+	}
+}
+/*
+void Client::setChannel(Channel *channel)
+{
+	this->channels_ = channel;
+}
+*/
 void Client::setCapStart(bool status)
 {
 	hasCapStart_ = status;

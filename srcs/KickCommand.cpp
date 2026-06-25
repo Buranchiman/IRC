@@ -85,7 +85,7 @@ void KickCommand::kick(Client &client, const std::string &channel_name, const st
 	kick_msg += "\r\n";
 	channel->broadcastToAll(kick_msg);
 	channel->leave(*target);
-	target->setChannel(NULL);
+	target->suppChannel(NULL);
 	std::string msg = "You have been kicked from " + channel_name + "\r\n";
 	write(target->getFdSocket(), msg.c_str(), msg.size());
 	msg = "Please join a channel using: JOIN #channelname\r\n";
