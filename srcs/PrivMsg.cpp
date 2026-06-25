@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PrivMsg.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/05/28 10:37:46 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/06/25 15:05:28 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,13 @@ void PrivMsg::message(Client &client, const std::string &msg)
 	}
 	if (!target.empty() && target[0] == '#')
 	{
-		Channel *channel = client.getChannel();
-		if (!channel || channel->getName() != target)
+		Channel *channel = NULL;
+		for (std::vector<Channel *>::iterator it = client.getChannels().begin(); it != client.getChannels().end(); ++it)
+		{
+			if ((*it)->getName() == target)
+				channel = *it;
+		}
+		if (!channel)
 		{
 			std::string err = ":localhost 404 " + client.getNickName() + " " + target + " :Cannot send to channel\r\n";
 			send_all(client.getFdSocket(), err);
