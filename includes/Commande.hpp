@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 14:27:31 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/05/12 12:24:30 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/06/26 12:09:46 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ void parseKick(const std::string &args, std::string &target, std::string &reason
  * @param modeArgs Reference to store mode arguments (password, limit, etc)
  * @return void
  */
-void parseMode(const std::string &args, std::string &mode, std::string &modeArgs);
+void parseMode(const std::string &args, std::string channelName, std::string &mode, std::string &modeArgs);
 
 /**
  * @brief Parse TOPIC command arguments

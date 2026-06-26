@@ -68,6 +68,7 @@ public:
 	std::string const	&getName() const;
 	std::string const	&getTopic() const;
 	const std::vector<Client*> &getMembers() const;
+	const std::string getPassword() const;
 };
 
 #endif /* Channel_HPP */

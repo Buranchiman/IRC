@@ -40,17 +40,27 @@ void parseKick(const std::string &args, std::string &target, std::string &reason
 	}
 }
 
-void parseMode(const std::string &args, std::string &mode, std::string &modeArgs)
+void parseMode(const std::string &args, std::string &channelName, std::string &mode, std::string &modeArgs)
 {
 	size_t space = args.find(' ');
-	mode = args.substr(0, space != std::string::npos ? space : args.length());
-	
-	modeArgs = "";
+	channelName, mode, modeArgs = "";
+	if (args[0] == '#')
+	{
+		channelName = args.substr(0, space != std::string::npos ? space : args.length());
+
+	}
 	if (space != std::string::npos)
 	{
-		modeArgs = args.substr(space + 1);
-		while (!modeArgs.empty() && modeArgs[0] == ' ')
-			modeArgs.erase(0, 1);
+		size_t nextSpace = args.find(' ', space + 1);
+		mode = args.substr(space + 1, nextSpace != std::string::npos ? space : args.length());
+		while (!mode.empty() && mode[0] == ' ')
+				mode.erase(0, 1);
+		if (nextSpace != std::string::npos)
+		{
+			modeArgs = args.substr(nextSpace + 1);
+			while (!modeArgs.empty() && modeArgs[0] == ' ')
+				modeArgs.erase(0, 1);
+		}
 	}
 }
 
