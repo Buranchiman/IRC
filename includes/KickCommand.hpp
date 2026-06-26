@@ -11,27 +11,29 @@
 /* ************************************************************************** */
 
 #pragma once
+#include <vector>
 #include "Command.hpp"
 #include "Channel.hpp"
-#include "Client.hpp"
-#include <vector>
-#include <string>
 
 class KickCommand : public Command
 {
 private:
-    std::vector<Client*>  &clients_;
-    std::vector<Channel>  &channels_;
+	std::vector<Channel> *channels_;
 
 public:
-    KickCommand(std::vector<Client*> &clients, std::vector<Channel> &channels);
-    ~KickCommand();
+	KickCommand(std::vector<Channel> &channels);
+	~KickCommand();
 
-    void execute(Client &client, const std::string &args);
-
+	/**
+	 * @brief Execute KICK command - Remove user from channel
+	 *
+	 * @param client Client performing the kick (must be operator)
+	 * @param args Arguments (format: "target_name [reason]")
+	 * @return void
+	 */
+	void execute(Client &client, const std::string &args);
+	
 private:
-    void kick(Client &client,
-              const std::string &channel_name,
-              const std::string &target_name,
-              const std::string &reason);
+	void kick(Client &client, const std::string &target_name, const std::string &reason);
+	// void kick(Client &client, const std::string &target_name, const std::string &reason);
 };

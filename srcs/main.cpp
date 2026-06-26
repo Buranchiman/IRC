@@ -27,7 +27,7 @@ void handleNewConnection(int sockfd, struct sockaddr_in &cli_addr, socklen_t &cl
 						 struct pollfd *fds, std::vector<Client> &clients, int maxClients);
 void handleClientDisconnection(struct pollfd *fds, std::vector<Client> &clients, size_t clientIdx);
 void handleClientInput(std::vector<Client> &clients, size_t clientIdx,
-					   char *buffer, int n, Commande &command);
+					   char *buffer, int n, Command &command);
 
 pollfd    newPoll(int fd)
 {

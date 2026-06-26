@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Commande.hpp                                       :+:      :+:    :+:   */
+/*   Command.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 14:27:31 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/06/26 11:58:12 by luda-cun         ###   ########.fr       */
+/*   Updated: 2026/06/26 12:30:04 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,14 @@ protected:
     std::vector<Channel>  &channels_;
 
 public:
+	
     Command(std::vector<Client*> &clients, std::vector<Channel> &channels)
         : clients_(clients), channels_(channels) {}
     virtual ~Command() {}
-
+	
     virtual void execute(Client &client, const std::string &args) = 0;
 };
+
 
 /**
  * @brief Parse functions for commands
