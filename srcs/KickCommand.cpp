@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "../includes/KickCommand.hpp"
-#include "../includes/Commande.hpp"
+#include "../includes/Command.hpp"
 #include <iostream>
 #include <unistd.h>
 
@@ -26,84 +26,73 @@ KickCommand::~KickCommand()
 
 void KickCommand::execute(Client &client, const std::string &args)
 {
-	std::string target, reason;
-	parseKick(args, target, reason);
+	std::string channel_name, target_nick, reason;
+	parseKick(args, channel_name, target_nick, reason);
 
-	if (!target.empty())
+	if (channel_name.empty() || target_nick.empty())
 	{
-		std::cout << "[" << client.getNickName() << "] KICK " << target << std::endl;
-		kick(client, target, reason);
+		std::string msg = ":localhost 461 " + client.getNickName() + " KICK :Not enough parameters\r\n";
+		send_all(client.getFdSocket(), msg);
+		return;
 	}
+	kick(client, channel_name, target_nick, reason);
 }
 
-void KickCommand::kick(Client &client, const std::string &target_name, const std::string &reason)
+void KickCommand::kick(Client &client, const std::string &channel_name,
+					   const std::string &target_nick, const std::string &reason)
 {
-	std::vector<Channel *> channels  = client.getChannels();
-	std::vector<Channel *> channels_serv = KickCommand.
-	for(unsigned int i = 0; channels.size() < i; i++)
+	// Trouver le channel
+	Channel *channel = NULL;
+	for (size_t i = 0; i < channels_->size(); ++i)
 	{
-		if(channels[i]->getName() == target_name)
+		if ((*channels_)[i].getName() == channel_name)
 		{
-			//sup client
-			client.suppChannel(channels[i]);
-			//sup serv
-			
+			channel = &(*channels_)[i];
+			break;
 		}
 	}
+	if (!channel)
+	{
+		std::string msg = ":localhost 403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
+		send_all(client.getFdSocket(), msg);
+		return;
+	}
 
-	// if (channels.empty())
-	// {
-	// 	std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-	// 	write(client.getFdSocket(), msg.c_str(), msg.size());
-	// 	return;
-	// }
-	// kick(client, target_name, reason);
+	// Verifier que le kicker est dans le channel
+	if (!channel->findClientByNickname(client.getNickName()))
+	{
+		std::string msg = ":localhost 442 " + client.getNickName() + " " + channel_name + " :You're not on that channel\r\n";
+		send_all(client.getFdSocket(), msg);
+		return;
+	}
+
+	// Verifier que le kicker est operateur
+	if (!channel->isOperator(client))
+	{
+		std::string msg = ":localhost 482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
+		send_all(client.getFdSocket(), msg);
+		return;
+	}
+
+	// Trouver la cible dans le channel
+	Client *target = channel->findClientByNickname(target_nick);
+	if (!target)
+	{
+		std::string msg = ":localhost 441 " + client.getNickName() + " " + target_nick + " " + channel_name + " :They aren't on that channel\r\n";
+		send_all(client.getFdSocket(), msg);
+		return;
+	}
+
+	// Envoyer le message KICK a tous les membres (y compris la cible) avant de la retirer
+	std::string kick_msg = ":" + client.getNickName() + "!" + client.getUserName()
+		+ "@localhost KICK " + channel_name + " " + target_nick + " :";
+	kick_msg += reason.empty() ? client.getNickName() : reason;
+	kick_msg += "\r\n";
+	channel->broadcastToAll(kick_msg);
+
+	// Retirer la cible du channel
+	channel->leave(*target);
+	target->suppChannel(channel);
+
+	std::cout << "[" << client.getNickName() << "] KICK " << channel_name << " " << target_nick << std::endl;
 }
-
-// void KickCommand::kick(Client &client, std::vector<Channel *> channels, const std::string &target_name, const std::string &reason)
-// {
-	
-
-// 	Channel *channel = NULL;
-// 	for (size_t i = 0; i < channels_->size(); ++i)
-// 	{
-// 		if ((*channels_)[i].getName() == channel_name)
-// 		{
-// 			channel = &(*channels_)[i];
-// 			break;
-// 		}
-// 	}
-// 	if (!channel)
-// 	{
-// 		std::string msg = "403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
-// 		write(client.getFdSocket(), msg.c_str(), msg.size());
-// 		return;
-// 	}
-// 	if (!channel->isOperator(client))
-// 	{
-// 		std::string msg = "482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
-// 		write(client.getFdSocket(), msg.c_str(), msg.size());
-// 		return;
-// 	}
-// 	Client *target = channel->findClientByNickname(target_name);
-// 	if (!target)
-// 	{
-// 		std::string msg = "401 " + client.getNickName() + " " + target_name + " :No such nick/channel\r\n";
-// 		write(client.getFdSocket(), msg.c_str(), msg.size());
-// 		return;
-// 	}
-
-// 	std::string kick_msg = client.getNickName() + " kicked " + target_name;
-// 	if (!reason.empty())
-// 		kick_msg += " (" + reason + ")";
-// 	kick_msg += "\r\n";
-// 	channel->broadcastToAll(kick_msg);
-// 	channel->leave(*target);
-// 	target->suppChannel(NULL);
-// 	std::string msg = "You have been kicked from " + channel_name + "\r\n";
-// 	write(target->getFdSocket(), msg.c_str(), msg.size());
-// 	msg = "Please join a channel using: JOIN #channelname\r\n";
-// 	write(target->getFdSocket(), msg.c_str(), msg.size());
-
-// 	std::cout << "[" << client.getNickName() << "] KICK #" << channel_name << " " << target_name << std::endl;
-// }

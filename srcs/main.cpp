@@ -15,6 +15,7 @@
 #include "../includes/Client.hpp"
 #include "../includes/Serveur.hpp"
 #include "../includes/Command.hpp"
+#include "../includes/Commande.hpp"
 
 void error(const char *msg)
 {
@@ -107,7 +108,7 @@ int main(int argc, char *argv[])
 	channels.push_back(Channel("#test", "Just a test channel"));
 	channels.push_back(Channel("#students", "a channel dedicated to exchanging between students"));
 
-	Command commande(client, channels);
+	Commande commande(client, channels);
 
 	if (argc < 2)
 	{

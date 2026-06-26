@@ -16,22 +16,10 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 
-/**
- * @brief Wrapper class for command handling
- * Delegates to specific Command classes
- */
 class Command
 {
-protected:
-    std::vector<Client*>  &clients_;
-    std::vector<Channel>  &channels_;
-
 public:
-	
-    Command(std::vector<Client*> &clients, std::vector<Channel> &channels)
-        : clients_(clients), channels_(channels) {}
     virtual ~Command() {}
-	
     virtual void execute(Client &client, const std::string &args) = 0;
 };
 
@@ -58,7 +46,7 @@ void parseJoin(const std::string &args, std::string &channelName, std::string &p
  * @param reason Reference to store kick reason (optional)
  * @return void
  */
-void parseKick(const std::string &args, std::string &target, std::string &reason);
+void parseKick(const std::string &args, std::string &channel, std::string &target, std::string &reason);
 
 /**
  * @brief Parse MODE command arguments

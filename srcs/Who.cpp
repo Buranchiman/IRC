@@ -12,8 +12,8 @@
 
 #include "Who.hpp"
 
-Who::Who(std::vector<Client *> &clients, std::vector<Channel> &channels)
-	: clients_(&clients), channels_(&channels)
+Who::Who(std::vector<Client *> &/*clients*/, std::vector<Channel> &channels)
+	: channels_(&channels)
 {
 }
 

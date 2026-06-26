@@ -18,7 +18,7 @@
 class Who: public Command
 {
 private:
-	std::vector<Client *> *clients_;
+	// std::vector<Client *> *clients_;
 	std::vector<Channel> *channels_;
 
 public:

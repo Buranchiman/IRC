@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   KickCommand.hpp                                    :+:      :+:    :+:   */
+/*   Commande.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lucien <lucien@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -11,22 +11,20 @@
 /* ************************************************************************** */
 
 #pragma once
-#include <vector>
-#include "Command.hpp"
 #include "Channel.hpp"
+#include "Client.hpp"
+#include <vector>
 
-class KickCommand : public Command
+class Commande
 {
 private:
-	std::vector<Channel> *channels_;
+	std::vector<Channel>  *channels_;
+	std::vector<Client *> &clients_;
 
 public:
-	KickCommand(std::vector<Channel> &channels);
-	~KickCommand();
+	Commande(std::vector<Client *> &clients, std::vector<Channel> &channels)
+		: channels_(&channels), clients_(clients) {}
 
-	void execute(Client &client, const std::string &args);
-
-private:
-	void kick(Client &client, const std::string &channel_name,
-			  const std::string &target_nick, const std::string &reason);
+	std::vector<Channel>  *getChannels() { return channels_; }
+	std::vector<Client *> &getClients()  { return clients_; }
 };
