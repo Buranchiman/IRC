@@ -14,7 +14,7 @@
 #include <errno.h>
 #include "../includes/Client.hpp"
 #include "../includes/Serveur.hpp"
-#include "../includes/Commande.hpp"
+#include "../includes/Command.hpp"
 
 void error(const char *msg)
 {
@@ -27,7 +27,7 @@ void handleNewConnection(int sockfd, struct sockaddr_in &cli_addr, socklen_t &cl
 						 struct pollfd *fds, std::vector<Client> &clients, int maxClients);
 void handleClientDisconnection(struct pollfd *fds, std::vector<Client> &clients, size_t clientIdx);
 void handleClientInput(std::vector<Client> &clients, size_t clientIdx,
-					   char *buffer, int n, Commande &commande);
+					   char *buffer, int n, Commande &command);
 
 pollfd    newPoll(int fd)
 {
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 	channels.push_back(Channel("#test", "Just a test channel"));
 	channels.push_back(Channel("#students", "a channel dedicated to exchanging between students"));
 
-	Commande commande(client, channels);
+	Command commande(client, channels);
 
 	if (argc < 2)
 	{
