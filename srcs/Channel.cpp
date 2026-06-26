@@ -275,3 +275,8 @@ const std::vector<Client*> &Channel::getMembers() const
 {
 	return clients_;
 }
+
+const std::string Channel::getPassword() const
+{
+	return (password_);
+}

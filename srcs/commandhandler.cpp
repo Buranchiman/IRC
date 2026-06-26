@@ -71,14 +71,14 @@ void handleJoinCommand(Client &client, const std::string &line, std::vector<Chan
 // 	cmd.execute(client, args);
 // }
 
-// void handleModeCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
-// {
-// 	std::string args;
-// 	parseCommandArg(line, "MODE ", args);
+void handleModeCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+{
+	std::string args;
+	parseCommandArg(line, "MODE ", args);
 
-// 	ModeCommand cmd(channels);
-// 	cmd.execute(client, args);
-// }
+	ModeCommand cmd(channels);
+	cmd.execute(client, args);
+}
 
 void handlePingCommand(Client &client, const std::string &line)
 {

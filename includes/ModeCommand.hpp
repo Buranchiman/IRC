@@ -34,6 +34,6 @@ public:
 	void execute(Client &client, const std::string &args);
 
 private:
-	void mode(Client &client, const std::string &mode_str, const std::string &args);
+	void modePrepare(Client &client, const std::string channelName, const std::string &mode_str, const std::string &args);
 	void mode(Client &client, const std::string &channel_name, const std::string &mode_str, const std::string &args);
 };

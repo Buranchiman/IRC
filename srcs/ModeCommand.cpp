@@ -27,23 +27,24 @@ ModeCommand::~ModeCommand()
 
 void ModeCommand::execute(Client &client, const std::string &args)
 {
-	std::string mode, modeArgs;
-	parseMode(args, mode, modeArgs);
+	std::string mode, modeArgs, channelName;
+	parseMode(args, channelName, mode, modeArgs);
 	
 	std::cout << "[" << client.getNickName() << "] MODE " << mode << std::endl;
-	ModeCommand::mode(client, mode, modeArgs);
+	ModeCommand::mode(client, channelName, mode, modeArgs);
 }
 
-void ModeCommand::mode(Client &client, const std::string &mode_str, const std::string &args)
+void ModeCommand::modePrepare(Client &client, const std::string channelName, const std::string &mode_str, const std::string &args)
 {
-	Channel *channel = client.getChannel();
-	if (!channel)
+	std::vector<Channel *> channel = client.getChannels();
+	if (channel.empty())
 	{
 		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
 		write(client.getFdSocket(), msg.c_str(), msg.size());
 		return;
 	}
-	mode(client, channel->getName(), mode_str, args);
+
+	mode(client, channelName, mode_str, args);
 }
 
 void ModeCommand::mode(Client &client, const std::string &channel_name, const std::string &mode_str, const std::string &args)
@@ -57,14 +58,33 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 			break;
 		}
 	}
-
 	if (!channel)
 	{
 		std::string msg = "403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
 		write(client.getFdSocket(), msg.c_str(), msg.size());
 		return;
 	}
-
+	if (channel_name != "" && mode_str == "" && args == "")
+	{
+		std::string modes, modeParams;
+		if (channel->isInviteOnly())
+			modes += 'i';
+		if (channel->isTopicRestricted())
+			modes += 't';
+		if (channel->hasPassword())
+		{
+			modes += 'k';
+			if (channel->findClientByNickname(client.getNickName()))
+				modeParams += channel->getPassword() + ' '; 
+		}
+		if (channel->hasUserLimit())
+		{
+			modes += 'l';
+		}
+		std::string msg = ":localhost 324 " + client.getNickName() + " " + channel_name + 
+		send_all(client.getFdSocket(), )
+		return ;
+	}
 	if (!channel->isOperator(client))
 	{
 		std::string msg = "482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
