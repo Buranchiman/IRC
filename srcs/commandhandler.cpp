@@ -171,8 +171,8 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 		// 	handleInviteCommand(client, line, channels, clients);
 		// else if (line.size() >= 6 && line.substr(0, 6) == "TOPIC ")
 		// 	handleTopicCommand(client, line, channels);
-		// else if (line.size() >= 5 && line.substr(0, 5) == "MODE ")
-		// 	handleModeCommand(client, line, channels);
+		else if (line.size() >= 5 && line.substr(0, 5) == "MODE ")
+			handleModeCommand(client, line, channels);
 		else if (line.size() >= 8 && line.substr(0, 8) == "PRIVMSG ")
 		{
 			// Removed slow cout for performance

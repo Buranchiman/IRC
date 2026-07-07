@@ -43,7 +43,6 @@ void parseKick(const std::string &args, std::string &target, std::string &reason
 void parseMode(const std::string &args, std::string &channelName, std::string &mode, std::string &modeArgs)
 {
 	size_t space = args.find(' ');
-	channelName, mode, modeArgs = "";
 	if (args[0] == '#')
 	{
 		channelName = args.substr(0, space != std::string::npos ? space : args.length());
