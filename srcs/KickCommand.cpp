@@ -13,7 +13,6 @@
 #include "../includes/KickCommand.hpp"
 #include "../includes/Commande.hpp"
 #include <iostream>
-#include <unistd.h>
 
 KickCommand::KickCommand(std::vector<Channel> &channels)
 	: channels_(&channels)
@@ -26,29 +25,19 @@ KickCommand::~KickCommand()
 
 void KickCommand::execute(Client &client, const std::string &args)
 {
-	std::string target, reason;
-	parseKick(args, target, reason);
+	std::string channel_name, target_nick, reason;
+	parseKick(args, channel_name, target_nick, reason);
 
-	if (!target.empty())
+	if (channel_name.empty() || target_nick.empty())
 	{
-		std::cout << "[" << client.getNickName() << "] KICK " << target << std::endl;
-		kick(client, target, reason);
-	}
-}
-
-void KickCommand::kick(Client &client, const std::string &target_name, const std::string &reason)
-{
-	Channel *channel = client.getChannel();
-	if (!channel)
-	{
-		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
+		send_all(client.getFdSocket(), ":localhost 461 " + client.getNickName() + " KICK :Not enough parameters\r\n");
 		return;
 	}
-	kick(client, channel->getName(), target_name, reason);
+	kick(client, channel_name, target_nick, reason);
 }
 
-void KickCommand::kick(Client &client, const std::string &channel_name, const std::string &target_name, const std::string &reason)
+void KickCommand::kick(Client &client, const std::string &channel_name,
+					   const std::string &target_nick, const std::string &reason)
 {
 	Channel *channel = NULL;
 	for (size_t i = 0; i < channels_->size(); ++i)
@@ -61,35 +50,43 @@ void KickCommand::kick(Client &client, const std::string &channel_name, const st
 	}
 	if (!channel)
 	{
-		std::string msg = "403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
+		send_all(client.getFdSocket(), ":localhost 403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n");
+		return;
+	}
+	if (!channel->findClientByNickname(client.getNickName()))
+	{
+		send_all(client.getFdSocket(), ":localhost 442 " + client.getNickName() + " " + channel_name + " :You're not on that channel\r\n");
 		return;
 	}
 	if (!channel->isOperator(client))
 	{
-		std::string msg = "482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
+		send_all(client.getFdSocket(), ":localhost 482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n");
 		return;
 	}
-	Client *target = channel->findClientByNickname(target_name);
+	Client *target = channel->findClientByNickname(target_nick);
 	if (!target)
 	{
-		std::string msg = "401 " + client.getNickName() + " " + target_name + " :No such nick/channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
+		send_all(client.getFdSocket(), ":localhost 441 " + client.getNickName() + " " + target_nick + " " + channel_name + " :They aren't on that channel\r\n");
 		return;
 	}
 
-	std::string kick_msg = client.getNickName() + " kicked " + target_name;
-	if (!reason.empty())
-		kick_msg += " (" + reason + ")";
-	kick_msg += "\r\n";
+	std::string kick_msg = ":" + client.getNickName() + "!" + client.getUserName()
+		+ "@localhost KICK " + channel_name + " " + target_nick + " :"
+		+ (reason.empty() ? client.getNickName() : reason) + "\r\n";
 	channel->broadcastToAll(kick_msg);
-	channel->leave(*target);
-	target->suppChannel(NULL);
-	std::string msg = "You have been kicked from " + channel_name + "\r\n";
-	write(target->getFdSocket(), msg.c_str(), msg.size());
-	msg = "Please join a channel using: JOIN #channelname\r\n";
-	write(target->getFdSocket(), msg.c_str(), msg.size());
 
-	std::cout << "[" << client.getNickName() << "] KICK #" << channel_name << " " << target_name << std::endl;
+	channel->leave(*target);
+
+	// suppChannel a un bug (condition inversee), on retire le channel directement
+	std::vector<Channel *> &chans = target->getChannels();
+	for (std::vector<Channel *>::iterator it = chans.begin(); it != chans.end(); ++it)
+	{
+		if (*it == channel)
+		{
+			chans.erase(it);
+			break;
+		}
+	}
+
+	std::cout << "[" << client.getNickName() << "] KICK " << channel_name << " " << target_nick << std::endl;
 }

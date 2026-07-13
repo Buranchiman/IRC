@@ -12,8 +12,8 @@
 
 #include "WhoIs.hpp"
 
-WhoIs::WhoIs(std::vector<Client *> &clients, std::vector<Channel> &channels)
-	: clients_(&clients), channels_(&channels)
+WhoIs::WhoIs(std::vector<Client *> &clients, std::vector<Channel> &/*channels*/)
+	: clients_(&clients)
 {
 }
 

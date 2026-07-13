@@ -57,7 +57,7 @@ void parseJoin(const std::string &args, std::string &channelName, std::string &p
  * @param reason Reference to store kick reason (optional)
  * @return void
  */
-void parseKick(const std::string &args, std::string &target, std::string &reason);
+void parseKick(const std::string &args, std::string &channel, std::string &target, std::string &reason);
 
 /**
  * @brief Parse MODE command arguments

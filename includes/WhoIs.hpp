@@ -19,7 +19,7 @@ class WhoIs: public Command
 {
 private:
 	std::vector<Client *> *clients_;
-	std::vector<Channel> *channels_;
+	// std::vector<Channel> *channels_;
 
 public:
 	WhoIs(std::vector<Client *> &clients, std::vector<Channel> &channels);
