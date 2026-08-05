@@ -189,8 +189,15 @@ int main(int argc, char *argv[])
 							else if (line.find("NICK ") == 0)
 							{
 								std::string nick = line.substr(5);
+								if (findClientByNickname(client, nick))
+								{
+									send_all(client[i - 1]->getFdSocket(), ":localhost 433 " + nick + " :Nickname is already in use");
+									eraseClient(client, client[i - 1]);
+									break;
+								}
 								client[i - 1]->setNickName(nick);
 								isAuth = true;
+
 							}
 							else if (line.find("USER ") == 0)
 							{
