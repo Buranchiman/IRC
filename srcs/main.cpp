@@ -25,7 +25,7 @@ void error(const char *msg)
 // Forward declarations for handlers
 void handleNewConnection(int sockfd, struct sockaddr_in &cli_addr, socklen_t &clilen,
 						 struct pollfd *fds, std::vector<Client> &clients, int maxClients);
-void handleClientDisconnection(struct pollfd *fds, std::vector<Client> &clients, size_t clientIdx);
+void handleClientDisconnection(std::vector<pollfd> &fds, std::vector<Client *> &clients, size_t clientIdx);
 void handleClientInput(std::vector<Client> &clients, size_t clientIdx,
 					   char *buffer, int n, Commande &commande);
 
@@ -164,21 +164,26 @@ int main(int argc, char *argv[])
 
 						// if (errno != EAGAIN && errno != EWOULDBLOCK)
 						// 	error("ERROR reading from socket");
+						std::cout << "i is at " << i << '\n';
+						std::cerr << strerror(errno) << '\n';
 						std::cout << "destructor Client" << std::endl;
-						close(fds[i].fd); //on ferme le fd
-                        fds.erase(fds.begin() + i); //on erase le pollfd du vecteur
-                        eraseClient(client, client[i - 1]);
-						i--;
+						std::cout << "before disconnect size is" << fds.size() << '\n';
+						handleClientDisconnection(fds, client, i - 1);
+						std::cout << "after disconnect size is" << fds.size() << '\n';
+						if (i < fds.size())
+							i--;
 						continue;
 					}
 
 					if (n == 0)
 					{
+						std::cout << "i is at " << i << '\n';
 						std::cout << "destructor Client" << std::endl;
-						close(fds[i].fd); //on ferme le fd
-                        fds.erase(fds.begin() + i); //on erase le pollfd du vecteur
-                        eraseClient(client, client[i - 1]);
-						i--;
+						std::cout << "before disconnect size is" << fds.size() << '\n';
+						handleClientDisconnection(fds, client, i - 1);
+						std::cout << "after disconnect size is" << fds.size() << '\n';
+						if (i < fds.size())
+							i--;
 						continue;
 					}
 
@@ -211,7 +216,7 @@ int main(int argc, char *argv[])
 								if (findClientByNickname(client, nick))
 								{
 									send_all(client[i - 1]->getFdSocket(), ":localhost 433 " + nick + " :Nickname is already in use");
-									eraseClient(client, client[i - 1]);
+									handleClientDisconnection(fds, client, i - 1);
 									break;
 								}
 								client[i - 1]->setNickName(nick);

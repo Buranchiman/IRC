@@ -42,15 +42,15 @@ void handleNewConnection(int sockfd, struct sockaddr_in &cli_addr, socklen_t &cl
 	fds[clients.size()].events = POLLIN;
 }
 
-void handleClientDisconnection(struct pollfd *fds, std::vector<Client> &clients, size_t clientIdx)
+void handleClientDisconnection(std::vector<pollfd> &fds, std::vector<Client *> &clients, size_t clientIdx)
 {
-	if (clients[clientIdx].getChannels().size() > 0)
+	if (clients[clientIdx]->getChannels().size() > 0)
 	{
-		for (std::vector<Channel *>::iterator it = clients[clientIdx].getChannels().begin(); it != clients[clientIdx].getChannels().end(); ++it)
-			(*it)->leave(clients[clientIdx]);
+		for (std::vector<Channel *>::iterator it = clients[clientIdx]->getChannels().begin(); it != clients[clientIdx]->getChannels().end(); ++it)
+			(*it)->leave(*clients[clientIdx]);
 	}
-	close(fds[clientIdx + 1].fd);
-	fds[clientIdx + 1].fd = -2;
+	close(fds[clientIdx + 1].fd); //on ferme le fd
+	fds.erase(fds.begin() + clientIdx + 1); //on erase le pollfd du vecteur
 	clients.erase(clients.begin() + clientIdx);
 }
 

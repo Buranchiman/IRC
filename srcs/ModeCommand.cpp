@@ -95,13 +95,13 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 		if (channel->hasPassword())
 		{
 			modes += 'k';
-			if (channel->findClientByNickname(client.getNickName()))
+			if (channel->findClientByNickname(client.getNickName()) && channel->isOperator(client))
 				modeParams += channel->getPassword() + ' '; 
 		}
 		if (channel->hasUserLimit())
 		{
 			modes += 'l';
-			if (channel->findClientByNickname(client.getNickName()))
+			if (channel->findClientByNickname(client.getNickName()) && channel->isOperator(client))
 				modeParams += channel->getUserLimit();
 		}
 		std::string msg = ":localhost 324 " + client.getNickName() + " " + channel_name + " " + reconstructModes(*channel) + " " + modeParams + "\r\n";
@@ -114,7 +114,6 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 		send_all(client.getFdSocket(), msg);
 		return;
 	}
-
 	bool add = true;
 	size_t current = 0;
 	if (mode_str.empty())
