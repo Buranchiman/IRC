@@ -6,12 +6,10 @@
 /*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/*   Updated: 2026/06/26 11:40:58 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/11 14:29:01 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 
 #include "../includes/Client.hpp"
@@ -180,7 +178,7 @@ void	Client::destroyPool(Client **clients, int maxClients)
 	}
 	delete[] clients;
 }
-
+//pour meiux ajouter les chanel
 void Client::addChannel(Channel *channel)
 {
 	for (size_t i = 0; i < channels_.size(); ++i)
@@ -190,7 +188,7 @@ void Client::addChannel(Channel *channel)
 	}
 	channels_.push_back(channel);
 }
-
+//pour mieux suprimer 
 void Client::suppChannel(Channel *channel)
 {
 	for (unsigned int i = 0; i < channels_.size(); )

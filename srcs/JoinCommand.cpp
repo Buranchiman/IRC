@@ -105,7 +105,10 @@ void JoinCommand::join(Client &client, const std::string &channel_name, const st
     }
 
     // Aucun channel trouvé -> on le crée
-    channels_->push_back(Channel(channel_name, "")); // pas de topic par défaut
+    std::string normalized_name = channel_name;
+    if (normalized_name.empty() == false && normalized_name[0] != '#')
+        normalized_name = std::string("#") + normalized_name;
+    channels_->push_back(Channel(normalized_name, "")); // pas de topic par défaut
     Channel &created = channels_->back();
 
     if (!key.empty())

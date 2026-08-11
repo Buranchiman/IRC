@@ -44,6 +44,15 @@ void handleJoinCommand(Client &client, const std::string &line, std::vector<Chan
 	cmd.execute(client, args);
 }
 
+void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+{
+	std::string args;
+	parseCommandArg(line, "KICK ", args);
+
+	KickCommand cmd(channels);
+	cmd.execute(client, args);
+}
+
 // void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
 // {
 // 	std::string args;
@@ -165,8 +174,8 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")
 			handleJoinCommand(client, line, channels);
-		// else if (line.size() >= 5 && line.substr(0, 5) == "KICK ")
-		// 	handleKickCommand(client, line, channels);
+		else if (line.size() >= 5 && line.substr(0, 5) == "KICK ")
+			handleKickCommand(client, line, channels);
 		// else if (line.size() >= 7 && line.substr(0, 7) == "INVITE ")
 		// 	handleInviteCommand(client, line, channels, clients);
 		// else if (line.size() >= 6 && line.substr(0, 6) == "TOPIC ")
