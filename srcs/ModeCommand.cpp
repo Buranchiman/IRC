@@ -15,6 +15,14 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstdlib>
+#include <sstream>
+
+std::string intToString(int value)
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
 
 ModeCommand::ModeCommand(std::vector<Channel> &channels)
 	: channels_(&channels)
@@ -80,7 +88,7 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 	std::cout << "Entered MODE" << std::endl;
 	if (!channel)
 	{
-		std::string msg = "403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
+		std::string msg = ":localhost 403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
 		send_all(client.getFdSocket(), msg);
 		return;
 	}
@@ -96,72 +104,84 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 		{
 			modes += 'k';
 			if (channel->findClientByNickname(client.getNickName()) && channel->isOperator(client))
-				modeParams += channel->getPassword() + ' '; 
+				modeParams += "password is " + channel->getPassword() + ' '; 
 		}
 		if (channel->hasUserLimit())
 		{
 			modes += 'l';
 			if (channel->findClientByNickname(client.getNickName()) && channel->isOperator(client))
-				modeParams += channel->getUserLimit();
+				modeParams += "user limit is " + intToString(channel->getUserLimit());
 		}
 		std::string msg = ":localhost 324 " + client.getNickName() + " " + channel_name + " " + reconstructModes(*channel) + " " + modeParams + "\r\n";
 		send_all(client.getFdSocket(), msg);
 		return ;
 	}
-	if (!channel->isOperator(client))
+	if (!channel->findClientByNickname(client.getNickName()))
 	{
-		std::string msg = "482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
+		std::string msg = ":localhost 442 " + client.getNickName() + " " + channel_name + " :You're not on that channel\r\n";
 		send_all(client.getFdSocket(), msg);
 		return;
 	}
-	bool add = true;
-	size_t current = 0;
+	if (!channel->isOperator(client))
+	{
+		std::string msg = ":localhost 482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
+		send_all(client.getFdSocket(), msg);
+		return;
+	}
+	unsigned int sign = UNSIGNED;
 	if (mode_str.empty())
 		return;
-	
-	if (mode_str[0] == '+')
+	std::istringstream iss(args);
+	std::string token;
+	std::vector<std::string> tokens;
+	while (iss >> token) // >> already skips consecutive whitespace
+    	tokens.push_back(token);
+	size_t argsIndex = 0;
+	for (size_t current = 0; current < mode_str.length(); current++)
 	{
-		add = true;
-		current = 1;
-	}
-	else if (mode_str[0] == '-')
-	{
-		add = false;
-		current = 1;
-	}
-
-	while (current < mode_str.length())
-	{
+		while (mode_str[current] == '+' || mode_str[current] == '-')
+		{
+			if (mode_str[current] == '+')
+			{
+				sign = PLUS;
+				current++;
+			}
+			else if (mode_str[current] == '-')
+			{
+				sign = MINUS;
+				current++;
+			}
+		}
 		std::cout << "Entered flag loop" << std::endl; 
 		char mode = mode_str[current];
 		switch (mode)
 		{
 			case 't':
-				channel->setTopicRestricted(add);
-				std::cout << "[" << client.getNickName() << "] Set topic restriction: " << (add ? "ON" : "OFF") << std::endl;
+				channel->setTopicRestricted(sign);
+				std::cout << "[" << client.getNickName() << "] Set topic restriction: " << (sign ? "ON" : "OFF") << std::endl;
 				break;
 			case 'i':
-				channel->setInviteOnly(add);
-				std::cout << "[" << client.getNickName() << "] Set invite only: " << (add ? "ON" : "OFF") << std::endl;
+				channel->setInviteOnly(sign);
+				std::cout << "[" << client.getNickName() << "] Set invite only: " << (sign ? "ON" : "OFF") << std::endl;
 				break;
 			case 'o':
 			{
-				if (args.empty())
+				if (argsIndex >= tokens.size())
 				{
-					std::string msg = "461 " + client.getNickName() + " MODE :Not enough parameters\r\n";
+					std::string msg = ":localhost 461 " + client.getNickName() + " MODE :Not enough parameters\r\n";
 					send_all(client.getFdSocket(), msg);
 					return;
 				}
-				
-				Client *target = channel->findClientByNickname(args);
+				Client *target = channel->findClientByNickname(tokens[argsIndex]);
+				argsIndex++;
 				if (!target)
 				{
-					std::string msg = "401 " + client.getNickName() + " " + args + " :No such nick/channel\r\n";
+					std::string msg = ":localhost 401 " + client.getNickName() + " " + args + " :No such nick/channel\r\n";
 					send_all(client.getFdSocket(), msg);
 					return;
 				}
 				
-				if (add)
+				if (sign)
 				{
 					channel->addOperator(*target);
 					std::cout << "[" << client.getNickName() << "] MODE +o " << args << std::endl;
@@ -175,15 +195,16 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 			}
 			case 'k':
 			{
-				if (add)
+				if (sign)
 				{
-					if (args.empty())
+					if (argsIndex >= tokens.size())
 					{
-						std::string msg = "461 " + client.getNickName() + " MODE :Not enough parameters\r\n";
+						std::string msg = ":localhost 461 " + client.getNickName() + " MODE :Not enough parameters\r\n";
 						send_all(client.getFdSocket(), msg);
 						return;
 					}
-					channel->setPassword(args);
+					channel->setPassword(tokens[argsIndex]);
+					argsIndex++;
 					std::cout << "[" << client.getNickName() << "] MODE +k " << args << std::endl;
 				}
 				else
@@ -195,18 +216,20 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 			}
 			case 'l':
 			{
-				if (add)
+				if (sign)
 				{
-					if (args.empty())
+					if (argsIndex >= tokens.size())
 					{
-						std::string msg = "461 " + client.getNickName() + " MODE :Not enough parameters\r\n";
+						std::cout << "tokens size is " << intToString(tokens.size()) << '\n';
+						std::string msg = ":localhost 461 " + client.getNickName() + " MODE :Not enough parameters\r\n";
 						send_all(client.getFdSocket(), msg);
 						return;
 					}
-					int limit = std::atoi(args.c_str());
+					int limit = std::atoi(tokens[argsIndex].c_str());
+					argsIndex++;
 					if (limit <= 0)
 					{
-						std::string msg = "461 " + client.getNickName() + " MODE :Invalid limit\r\n";
+						std::string msg = ":localhost 461 " + client.getNickName() + " MODE :Invalid limit\r\n";
 						send_all(client.getFdSocket(), msg);
 						return;
 					}
@@ -221,8 +244,11 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 				break;
 			}
 			default:
+			{
+				std::string msg = ":localhost 472 " + client.getNickName() + " " + mode + " :Is unknown char to me \r\n";
+				send_all(client.getFdSocket(), msg);
 				break;
+			}
 		}
-		current++;
 	}
 }

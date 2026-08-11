@@ -15,6 +15,13 @@
 #include "Command.hpp"
 #include "Channel.hpp"
 
+enum
+{
+	UNSIGNED = 2,
+	PLUS = 1,
+	MINUS = 0,
+};
+
 class ModeCommand : public Command
 {
 private:
