@@ -63,9 +63,31 @@ void parseMode(const std::string &args, std::string &channelName, std::string &m
 	}
 }
 
-void parseTopic(const std::string &args, std::string &topic)
+void parseTopic(const std::string &args, std::string &channel_name, std::string &topic)
 {
-	topic = args;
-	if (!topic.empty() && topic[0] == ':')
-		topic = topic.substr(1);
+    channel_name.clear();
+    topic.clear();
+
+    size_t pos = 0;
+
+    // Ignorer les espaces de début
+    while (pos < args.size() && args[pos] == ' ')
+        pos++;
+
+    // Extraire le nom du channel (jusqu'au prochain espace ou fin de chaîne)
+    size_t start = pos;
+    while (pos < args.size() && args[pos] != ' ')
+        pos++;
+    channel_name = args.substr(start, pos - start);
+
+    // Ignorer les espaces avant le topic
+    while (pos < args.size() && args[pos] == ' ')
+        pos++;
+
+    if (pos < args.size())
+    {
+        topic = args.substr(pos);
+        if (!topic.empty() && topic[0] == ':')
+            topic = topic.substr(1);
+    }
 }
