@@ -139,7 +139,7 @@ bool Channel::isTopicRestricted() const
 
 bool Channel::isOperator(Client &client)
 {
-	for (size_t i = 0; i < operators_.size(); ++i)
+	for (size_t i = 0; i < operators_.size(); i++)
 	{
 		if (operators_[i] == &client)
 			return true;

@@ -51,7 +51,8 @@ void parseMode(const std::string &args, std::string &channelName, std::string &m
 	if (space != std::string::npos)
 	{
 		size_t nextSpace = args.find(' ', space + 1);
-		mode = args.substr(space + 1, nextSpace != std::string::npos ? space : args.length());
+		std::cout << "[DEBUG] before being filled mode is " << mode << '\n';
+		mode = args.substr(space + 1, nextSpace != std::string::npos ? nextSpace - space - 1 : args.length());
 		while (!mode.empty() && mode[0] == ' ')
 				mode.erase(0, 1);
 		if (nextSpace != std::string::npos)
@@ -61,6 +62,7 @@ void parseMode(const std::string &args, std::string &channelName, std::string &m
 				modeArgs.erase(0, 1);
 		}
 	}
+	std::cout << "[DEBUG] At the end of parsemode channelname is " << channelName << " mode is " << mode << " and modeArgs are " << modeArgs << '\n'; 
 }
 
 void parseTopic(const std::string &args, std::string &topic)

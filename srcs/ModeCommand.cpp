@@ -86,6 +86,7 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 		}
 	}
 	std::cout << "Entered MODE" << std::endl;
+	std::cout << "[DEBUG] str-mode is " << mode_str << '\n';
 	if (!channel)
 	{
 		std::string msg = ":localhost 403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
@@ -109,8 +110,7 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 		if (channel->hasUserLimit())
 		{
 			modes += 'l';
-			if (channel->findClientByNickname(client.getNickName()) && channel->isOperator(client))
-				modeParams += "user limit is " + intToString(channel->getUserLimit());
+			modeParams += "user limit is " + intToString(channel->getUserLimit());
 		}
 		std::string msg = ":localhost 324 " + client.getNickName() + " " + channel_name + " " + reconstructModes(*channel) + " " + modeParams + "\r\n";
 		send_all(client.getFdSocket(), msg);
