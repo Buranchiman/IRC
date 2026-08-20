@@ -50,11 +50,45 @@ std::string ModeCommand::reconstructModes(Channel &channel) const
 	return (modes);
 }
 
+std::string ModeCommand::buildModeBroadcast(const std::string &senderPrefix,
+                                              const std::string &channelName,
+                                              const std::vector<AppliedMode> &applied) const
+{
+	if (applied.empty())
+		return "";
+
+	std::string modestring;
+	std::string argsPart;
+	char lastSign = 0;
+
+	for (size_t i = 0; i < applied.size(); ++i)
+	{
+		const AppliedMode &m = applied[i];
+		if (m.sign != lastSign)
+		{
+			modestring += m.sign;
+			lastSign = m.sign;
+		}
+		modestring += m.letter;
+		if (m.hasArg)
+			argsPart += " " + m.arg;
+	}
+	return ":" + senderPrefix + " MODE " + channelName + " " + modestring + argsPart + "\r\n";
+}
+
+void ModeCommand::broadcastToChannel(Channel &channel, const std::string &msg) const
+{
+	// Adjust getClients()/getMembers() to whatever your Channel class actually exposes
+	std::vector<Client *> members = channel.getMembers();
+	for (size_t i = 0; i < members.size(); ++i)
+		send_all(members[i]->getFdSocket(), msg);
+}
+
 void ModeCommand::execute(Client &client, const std::string &args)
 {
 	std::string mode, modeArgs, channelName;
 	parseMode(args, channelName, mode, modeArgs);
-	
+
 	std::cout << "[" << client.getNickName() << "] MODE " << mode << std::endl;
 	ModeCommand::mode(client, channelName, mode, modeArgs);
 }
@@ -105,7 +139,7 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 		{
 			modes += 'k';
 			if (channel->findClientByNickname(client.getNickName()) && channel->isOperator(client))
-				modeParams += "password is " + channel->getPassword() + ' '; 
+				modeParams += "password is " + channel->getPassword() + ' ';
 		}
 		if (channel->hasUserLimit())
 		{
@@ -137,6 +171,7 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 	while (iss >> token) // >> already skips consecutive whitespace
     	tokens.push_back(token);
 	size_t argsIndex = 0;
+	std::vector<AppliedMode> applied;
 	for (size_t current = 0; current < mode_str.length(); current++)
 	{
 		while (mode_str[current] == '+' || mode_str[current] == '-')
@@ -152,17 +187,25 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 				current++;
 			}
 		}
-		std::cout << "Entered flag loop" << std::endl; 
+		std::cout << "Entered flag loop" << std::endl;
 		char mode = mode_str[current];
 		switch (mode)
 		{
 			case 't':
 				channel->setTopicRestricted(sign);
 				std::cout << "[" << client.getNickName() << "] Set topic restriction: " << (sign ? "ON" : "OFF") << std::endl;
+				{
+					AppliedMode a = { sign ? '+' : '-', 't', "", false };
+					applied.push_back(a);
+				}
 				break;
 			case 'i':
 				channel->setInviteOnly(sign);
 				std::cout << "[" << client.getNickName() << "] Set invite only: " << (sign ? "ON" : "OFF") << std::endl;
+				{
+					AppliedMode a = { sign ? '+' : '-', 'i', "", false };
+					applied.push_back(a);
+				}
 				break;
 			case 'o':
 			{
@@ -180,7 +223,6 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 					send_all(client.getFdSocket(), msg);
 					return;
 				}
-				
 				if (sign)
 				{
 					channel->addOperator(*target);
@@ -190,6 +232,10 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 				{
 					channel->removeOperator(*target);
 					std::cout << "[" << client.getNickName() << "] MODE -o " << args << std::endl;
+				}
+				{
+					AppliedMode a = { sign ? '+' : '-', 'o', target->getNickName(), true };
+					applied.push_back(a);
 				}
 				break;
 			}
@@ -204,12 +250,20 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 						return;
 					}
 					channel->setPassword(tokens[argsIndex]);
+					{
+						AppliedMode a = { '+', 'k', tokens[argsIndex], true };
+						applied.push_back(a);
+					}
 					argsIndex++;
 					std::cout << "[" << client.getNickName() << "] MODE +k " << args << std::endl;
 				}
 				else
 				{
 					channel->removePassword();
+					{
+						AppliedMode a = { '-', 'k', "", false };
+						applied.push_back(a);
+					}
 					std::cout << "[" << client.getNickName() << "] MODE -k" << std::endl;
 				}
 				break;
@@ -234,11 +288,19 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 						return;
 					}
 					channel->setUserLimit(limit);
+					{
+						AppliedMode a = { '+', 'l', intToString(limit), true };
+						applied.push_back(a);
+					}
 					std::cout << "[" << client.getNickName() << "] MODE +l " << limit << std::endl;
 				}
 				else
 				{
 					channel->removeUserLimit();
+					{
+						AppliedMode a = { '-', 'l', "", false };
+						applied.push_back(a);
+					}
 					std::cout << "[" << client.getNickName() << "] MODE -l" << std::endl;
 				}
 				break;
@@ -251,4 +313,8 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 			}
 		}
 	}
+	std::string senderPrefix = ':' + client.getNickName() + "!" + client.getUserName() + "@" + "localhost" ;
+	std::string broadcast = buildModeBroadcast(senderPrefix, channel_name, applied);
+	if (!broadcast.empty())
+		broadcastToChannel(*channel, broadcast);
 }

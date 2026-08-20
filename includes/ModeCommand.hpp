@@ -22,6 +22,14 @@ enum
 	MINUS = 0,
 };
 
+struct AppliedMode
+{
+	char        sign;   // '+' or '-'
+	char        letter; // the mode char, e.g. 'o', 'k', 'l', 'i', 't'
+	std::string arg;    // only meaningful if hasArg is true
+	bool        hasArg;
+};
+
 class ModeCommand : public Command
 {
 private:
@@ -30,10 +38,10 @@ private:
 public:
 	ModeCommand(std::vector<Channel> &channels);
 	~ModeCommand();
-	
+
 	/**
 	 * @brief Execute MODE command - Change channel modes
-	 * 
+	 *
 	 * @param client Client changing the mode (must be operator)
 	 * @param args Arguments (format: "mode_string [mode_args]")
 	 * @return void
@@ -44,4 +52,9 @@ private:
 	std::string reconstructModes(Channel &channel) const;
 	void modePrepare(Client &client, const std::string channelName, const std::string &mode_str, const std::string &args);
 	void mode(Client &client, const std::string &channel_name, const std::string &mode_str, const std::string &args);
+	std::string buildModeBroadcast(const std::string &senderPrefix,
+                                 const std::string &channelName,
+                                 const std::vector<AppliedMode> &applied) const;
+	void broadcastToChannel(Channel &channel, const std::string &msg) const;
 };
+
