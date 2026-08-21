@@ -44,32 +44,32 @@ void handleJoinCommand(Client &client, const std::string &line, std::vector<Chan
 	cmd.execute(client, args);
 }
 
-// void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
-// {
-// 	std::string args;
-// 	parseCommandArg(line, "KICK ", args);
+void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+{
+	std::string args;
+	parseCommandArg(line, "KICK ", args);
 
-// 	KickCommand cmd(channels);
-// 	cmd.execute(client, args);
-// }
+	KickCommand cmd(channels);
+	cmd.execute(client, args);
+}
 
-// void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
-// {
-// 	std::string args;
-// 	parseCommandArg(line, "INVITE ", args);
+void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
+{
+	std::string args;
+	parseCommandArg(line, "INVITE ", args);
 
-// 	InviteCommand cmd(channels, clients);
-// 	cmd.execute(client, args);
-// }
+	InviteCommand cmd(channels, clients);
+	cmd.execute(client, args);
+}
 
-// void handleTopicCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
-// {
-// 	std::string args;
-// 	parseCommandArg(line, "TOPIC ", args);
+void handleTopicCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+{
+	std::string args;
+	parseCommandArg(line, "TOPIC ", args);
 
-// 	TopicCommand cmd(channels);
-// 	cmd.execute(client, args);
-// }
+	TopicCommand cmd(channels);
+	cmd.execute(client, args);
+}
 
 void handleModeCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
 {

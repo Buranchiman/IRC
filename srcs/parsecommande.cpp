@@ -73,12 +73,8 @@ void parseMode(const std::string &args, std::string &channelName, std::string &m
 	if (space != std::string::npos)
 	{
 		size_t nextSpace = args.find(' ', space + 1);
-<<<<<<< HEAD
 		std::cout << "[DEBUG] before being filled mode is " << mode << '\n';
 		mode = args.substr(space + 1, nextSpace != std::string::npos ? nextSpace - space - 1 : args.length());
-=======
-		mode = args.substr(space + 1, nextSpace != std::string::npos ? space : args.length());
->>>>>>> origin/lucien_kick_fin
 		while (!mode.empty() && mode[0] == ' ')
 				mode.erase(0, 1);
 		if (nextSpace != std::string::npos)
