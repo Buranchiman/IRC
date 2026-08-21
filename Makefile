@@ -10,7 +10,7 @@ CYAN     		= "\033[36m"    # Cyan
 WHITE    		= "\033[37m"    # White
 
 # Compiler
-NAME			= irc
+NAME			= ircserv
 CC				= c++
 CFLAGS			= -Wall -Wextra -Werror -g3 -std=c++98
 

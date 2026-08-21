@@ -149,28 +149,16 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 	// 	handleCapCommand(client, line);
 	// 	return;
 	// }
-	if (client.getChannels().empty())
-	{
-		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")
-		{
-			handleJoinCommand(client, line, channels);
-		}
-		else if (line.size() > 0)
-		{
-			std::string msg = "You must join a channel first. Use: JOIN #channelname\r\n";
-			write(client.getFdSocket(), msg.c_str(), msg.size());
-		}
-	}
 	else
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")
 			handleJoinCommand(client, line, channels);
-		// else if (line.size() >= 5 && line.substr(0, 5) == "KICK ")
-		// 	handleKickCommand(client, line, channels);
-		// else if (line.size() >= 7 && line.substr(0, 7) == "INVITE ")
-		// 	handleInviteCommand(client, line, channels, clients);
-		// else if (line.size() >= 6 && line.substr(0, 6) == "TOPIC ")
-		// 	handleTopicCommand(client, line, channels);
+		else if (line.size() >= 5 && line.substr(0, 5) == "KICK ")
+			handleKickCommand(client, line, channels);
+		else if (line.size() >= 7 && line.substr(0, 7) == "INVITE ")
+			handleInviteCommand(client, line, channels, clients);
+		else if (line.size() >= 6 && line.substr(0, 6) == "TOPIC ")
+			handleTopicCommand(client, line, channels);
 		else if (line.size() >= 5 && line.substr(0, 5) == "MODE ")
 			handleModeCommand(client, line, channels);
 		else if (line.size() >= 8 && line.substr(0, 8) == "PRIVMSG ")
