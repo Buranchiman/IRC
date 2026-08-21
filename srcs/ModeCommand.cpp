@@ -226,11 +226,17 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 				if (sign)
 				{
 					channel->addOperator(*target);
+					// Notifier le canal du changement de mode
+					std::string modeMsg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost MODE " + channel_name + " +o " + args + "\r\n";
+					channel->broadcastToAll(modeMsg);
 					std::cout << "[" << client.getNickName() << "] MODE +o " << args << std::endl;
 				}
 				else
 				{
 					channel->removeOperator(*target);
+					// Notifier le canal du changement de mode
+					std::string modeMsg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost MODE " + channel_name + " -o " + args + "\r\n";
+					channel->broadcastToAll(modeMsg);
 					std::cout << "[" << client.getNickName() << "] MODE -o " << args << std::endl;
 				}
 				{

@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 14:27:31 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/07/07 12:50:18 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/21 14:54:19 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,4 +76,4 @@ void parseMode(const std::string &args, std::string &channelName, std::string &m
  * @param topic Reference to store new topic
  * @return void
  */
-void parseTopic(const std::string &args, std::string &topic);
+void parseTopic(const std::string &args, std::string &channel_name, std::string &topic);

@@ -26,20 +26,48 @@ InviteCommand::~InviteCommand()
 
 void InviteCommand::execute(Client &client, const std::string &args)
 {
-	std::cout << "[" << client.getNickName() << "] INVITE " << args << std::endl;
-	invite(client, args);
+	// commande INVITE reçue
+
+	// Parse args: either "<nick>" or "<nick> <#channel>"
+	std::string trimmed = args;
+	while (!trimmed.empty() && trimmed[0] == ' ') trimmed.erase(0, 1);
+	while (!trimmed.empty() && trimmed[trimmed.size() - 1] == ' ') trimmed.erase(trimmed.size() - 1, 1);
+
+	if (trimmed.empty())
+		return;
+
+	size_t sp = trimmed.find(' ');
+	if (sp == std::string::npos)
+	{
+		// Only target nick provided
+		invite(client, trimmed);
+	}
+	else
+	{
+		std::string target = trimmed.substr(0, sp);
+		size_t pos = sp + 1;
+		while (pos < trimmed.size() && trimmed[pos] == ' ') pos++;
+		std::string channel = (pos < trimmed.size()) ? trimmed.substr(pos) : "";
+		invite(client, channel, target);
+	}
 }
 
 void InviteCommand::invite(Client &client, const std::string &target_name)
 {
-	Channel *channel = client.getChannel();
-	if (!channel)
+	std::vector<Channel *> &chlist = client.getChannels();
+	if (chlist.empty())
 	{
 		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
 		write(client.getFdSocket(), msg.c_str(), msg.size());
 		return;
 	}
-	invite(client, channel->getName(), target_name);
+	if (chlist.size() > 1)
+	{
+		std::string msg = "461 " + client.getNickName() + " INVITE :Not enough parameters (ambiguous channel)\r\n";
+		write(client.getFdSocket(), msg.c_str(), msg.size());
+		return;
+	}
+	invite(client, chlist[0]->getName(), target_name);
 }
 
 void InviteCommand::invite(Client &client, const std::string &channel_name, const std::string &target_name)
@@ -92,5 +120,5 @@ void InviteCommand::invite(Client &client, const std::string &channel_name, cons
 	channel->addInvite(*target);
 	write(target->getFdSocket(), msg.c_str(), msg.size());
 
-	std::cout << "[" << client.getNickName() << "] INVITE #" << channel_name << " " << target_name << std::endl;
+	// Invitation enregistrée et message envoyé à la cible
 }

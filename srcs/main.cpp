@@ -59,30 +59,11 @@ void sendWelcome(Client *client)
 	std::string nick = client->getNickName();
 	std::string user = client->getUserName();
 	int fd = client->getFdSocket();
-
-	// // Send welcome messages (CAP is sent separately when CAP command is received)
-	// std::string msg1 = ":localhost 001 " + nick + " :Welcome to IRC server " + nick + "!" + user + "@localhost\r\n";
-	// send_all(fd, msg1);
-
-	// std::string msg2 = ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n";
-	// send_all(fd, msg2);
-
-	// std::string msg3 = ":localhost 003 " + nick + " :This server was created just now\r\n";
-	// send_all(fd, msg3);
-
-	// std::string msg4 = ":localhost 004 " + nick + " localhost IRCv1.0 o i\r\n";
-	// send_all(fd, msg4);
-
-	// std::string msg5 = ":localhost 005 " + nick + " CHANTYPES=# EXTBAN=~ :are supported by this server\r\n";
-	// send_all(fd, msg5);
+	// Send the standard welcome (RPL 001-005)
 	send_all(fd, ":localhost 001 " + nick + " :Welcome to the IRC Network " + nick + "!" + user + "@localhost\r\n");
-
 	send_all(fd, ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n");
-
 	send_all(fd, ":localhost 003 " + nick + " :This server was created just now\r\n");
-
 	send_all(fd, ":localhost 004 " + nick + " localhost IRCv1.0 io io\r\n");
-
 	send_all(fd, ":localhost 005 " + nick + " CHANTYPES=# NICKLEN=30 USERLEN=10 CASEMAPPING=rfc1459 PREFIX=(o)@ :are supported\r\n");
 }
 

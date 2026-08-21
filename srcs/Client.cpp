@@ -6,9 +6,10 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/06/26 11:40:58 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/21 14:59:36 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 
 #include "../includes/Client.hpp"
@@ -177,26 +178,27 @@ void	Client::destroyPool(Client **clients, int maxClients)
 	}
 	delete[] clients;
 }
-
+//pour meiux ajouter les chanel
 void Client::addChannel(Channel *channel)
 {
+	for (size_t i = 0; i < channels_.size(); ++i)
+	{
+		if (channels_[i] == channel)
+			return;
+	}
 	channels_.push_back(channel);
 }
-
+//pour mieux suprimer 
 void Client::suppChannel(Channel *channel)
 {
-	for(unsigned int i = 0; channels_.size() < i; i++)
+	for (unsigned int i = 0; i < channels_.size(); )
 	{
-		if(channels_[i] == channel)
+		if (channels_[i] == channel)
 			channels_.erase(channels_.begin() + i);
+		else
+			++i;
 	}
 }
-/*
-void Client::setChannel(Channel *channel)
-{
-	this->channels_ = channel;
-}
-*/
 void Client::setCapStart(bool status)
 {
 	hasCapStart_ = status;
@@ -225,6 +227,21 @@ Client* findClientByNickname(const std::vector<Client *> &clients, const std::st
     }
     return NULL;
 }
+/*
+void Client::setChannel(Channel *channel)
+{
+	this->channels_ = channel;
+}
+*/
+
+// void	Client::writeOnTerm(std::string message)
+// {
+// 	if (channels_.size() > 0)
+// 	{
+// 		//std::cout << "Channel of " << userName_ << " exists" << std::endl;
+// 		channels_->msgEveryone(*this, message);
+// 	}
+// }
 
 void send_all(int fd, const std::string &msg)
 {

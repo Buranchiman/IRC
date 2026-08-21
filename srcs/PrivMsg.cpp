@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/06/25 16:55:26 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/21 15:09:43 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,27 +57,33 @@ void PrivMsg::message(Client &client, const std::string &msg)
 		send_all(client.getFdSocket(), err);
 		return;
 	}
+	//c lia jvais de sbug en mode on pouvais envoyer des message meme quand on etait kick
 	if (!target.empty() && target[0] == '#')
 	{
 		Channel *channel = NULL;
-		// if (client.getChannels().size() == 1)
-		// {
-		// 	if (client.getChannels()[0]->getName() == target)
-		// 		channel = client.getChannels()[0];
-		// }
-		for (std::vector<Channel *>::iterator it = client.getChannels().begin(); it != client.getChannels().end(); it++)
+		// Find channel in global channels_ list
+		for (size_t i = 0; i < channels_->size(); ++i)
 		{
-			std::cout << "Entered for" << std::endl;
-			std::cout << "Current channel name is " << (*it)->getName() << std::endl;
-			if ((*it)->getName() == target)
-				channel = *it;
+			if ((*channels_)[i].getName() == target)
+			{
+				channel = &(*channels_)[i];
+				break;
+			}
 		}
 		if (!channel)
+		{
+			std::string err = ":localhost 403 " + client.getNickName() + " " + target + " :No such channel\r\n";
+			send_all(client.getFdSocket(), err);
+			return;
+		}
+		// Check membership via channel's member list
+		if (!channel->findClientByNickname(client.getNickName()))
 		{
 			std::string err = ":localhost 404 " + client.getNickName() + " " + target + " :Cannot send to channel\r\n";
 			send_all(client.getFdSocket(), err);
 			return;
 		}
+		// Pass the command text (without prefix); Channel::msgEveryone will add the prefix
 		channel->msgEveryone(client, "PRIVMSG " + target + " :" + message);
 		return;
 	}

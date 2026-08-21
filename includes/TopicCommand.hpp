@@ -32,6 +32,7 @@ public:
 	 * @return void
 	 */
 	void execute(Client &client, const std::string &args);
+	
 
 private:
 	void topic(Client &client, const std::string &new_topic);
