@@ -72,7 +72,7 @@ void	Channel::msgEveryone(Client &sender, std::string msg)
 	{
 		if (clients_[i] != &sender)
 		{
-			std::cout << "name of client is" << clients_[i]->getNickName() << std::endl;
+			// envoyer aux autres membres
 			send(clients_[i]->getFdSocket(), out.c_str(), out.size(), MSG_NOSIGNAL);
 			//write(clients_[i]->getFdSocket(), out.c_str(), out.size());
 		}
@@ -83,6 +83,7 @@ void	Channel::broadcastToAll(std::string msg)
 {
 	for (unsigned long i = 0; i < clients_.size() ; i++)
 	{
+		// envoyer le message à tous les membres (le préfixe est déjà inclus par l'appelant)
 		write(clients_[i]->getFdSocket(), msg.c_str(), msg.size());
 	}
 }
@@ -99,17 +100,18 @@ std::string const	&Channel::getTopic() const
 
 void Channel::setTopic(std::string const &topic, Client &client)
 {
-	std::cout << "[DEBUG] setTopic called: restricted=" << _topicRestricted << " isOp=" << isOperator(client) << std::endl;
 	if (_topicRestricted && !isOperator(client))
 	{
 		std::string msg = "482 " + client.getNickName() + " " + name_ + " :You're not channel operator\r\n";
 		write(client.getFdSocket(), msg.c_str(), msg.size());
-		std::cout << "[DEBUG] Denied topic change for non-operator" << std::endl;
 		return;
 	}
 	topic_ = topic;
-	std::string msg = client.getNickName() + " changed topic to: " + topic_ + "\r\n";
+	// Envoi du changement de TOPIC au format IRC standard à tous les membres
+	std::string msg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost TOPIC " + name_ + " :" + topic_ + "\r\n";
 	broadcastToAll(msg);
+	// Also send the topic as a numeric reply to the client who set it
+	sendTopic(client);
 }
 
 void Channel::sendTopic(Client &client)
@@ -129,7 +131,7 @@ void Channel::sendTopic(Client &client)
 void Channel::setTopicRestricted(bool mode)
 {
 	_topicRestricted = mode;
-	std::cout << "[DEBUG] Topic restriction set to: " << mode << std::endl;
+	// flag de restriction du topic modifié (pas de log verbeux)
 }
 
 bool Channel::isTopicRestricted() const
@@ -152,6 +154,9 @@ void Channel::addOperator(Client &client)
 	if (!isOperator(client))
 	{
 		operators_.push_back(&client);
+		// notifier le client qu'il est devenu opérateur
+		std::string notice = ":localhost NOTICE " + client.getNickName() + " :vous etes op mtn\r\n";
+		write(client.getFdSocket(), notice.c_str(), notice.size());
 	}
 }
 
@@ -182,7 +187,7 @@ Client* Channel::findClientByNickname(std::string const &nickname)
 void Channel::setInviteOnly(bool mode)
 {
 	_inviteOnly = mode;
-	std::cout << "[DEBUG] Invite only set to: " << mode << std::endl;
+	// mode "invite only" activé/désactivé
 }
 
 bool Channel::isInviteOnly() const
@@ -223,13 +228,13 @@ void Channel::removeInvite(Client &client)
 void Channel::setPassword(std::string const &password)
 {
 	password_ = password;
-	std::cout << "[DEBUG] Password set for channel " << name_ << std::endl;
+	// mot de passe défini pour le channel
 }
 
 void Channel::removePassword()
 {
 	password_ = "";
-	std::cout << "[DEBUG] Password removed for channel " << name_ << std::endl;
+	// mot de passe supprimé
 }
 
 bool Channel::hasPassword() const
@@ -245,13 +250,13 @@ bool Channel::checkPassword(std::string const &password) const
 void Channel::setUserLimit(int limit)
 {
 	_userLimit = limit;
-	std::cout << "[DEBUG] User limit set to: " << limit << " for channel " << name_ << std::endl;
+	// limite d'utilisateurs définie
 }
 
 void Channel::removeUserLimit()
 {
 	_userLimit = -1;
-	std::cout << "[DEBUG] User limit removed for channel " << name_ << std::endl;
+	// limite d'utilisateurs supprimée
 }
 
 bool Channel::hasUserLimit() const

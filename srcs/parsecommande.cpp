@@ -109,7 +109,8 @@ void parseTopic(const std::string &args, std::string &channel_name, std::string 
     if (pos < args.size())
     {
         topic = args.substr(pos);
-        if (!topic.empty() && topic[0] == ':')
-            topic = topic.substr(1);
+		// Supprimer tous les ':' initiaux (cas où le client envoie plusieurs ':')
+		while (!topic.empty() && (topic[0] == ':' || topic[0] == ' '))
+			topic.erase(0, 1);
     }
 }

@@ -31,7 +31,7 @@ void TopicCommand::execute(Client &client, const std::string &args)
 
     parseTopic(args, channel_name, topic);
 
-    std::cout << "[" << client.getNickName() << "] TOPIC " << channel_name << " :" << topic << std::endl;
+    // commande TOPIC reçue
 
     if (channel_name.empty())
     {
@@ -45,14 +45,21 @@ void TopicCommand::execute(Client &client, const std::string &args)
 
 void TopicCommand::topic(Client &client, const std::string &new_topic)
 {
-	Channel *channel = client.getChannel();
-	if (!channel)
-	{
-		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
-		return;
-	}
-	topic(client, channel->getName(), new_topic);
+    // Use client's channel list (support multiple channels per client)
+    std::vector<Channel *> &chlist = client.getChannels();
+    if (chlist.empty())
+    {
+        std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
+        send_all(client.getFdSocket(), msg);
+        return;
+    }
+    if (chlist.size() > 1)
+    {
+        std::string msg = "461 " + client.getNickName() + " TOPIC :Not enough parameters (ambiguous channel)\r\n";
+        send_all(client.getFdSocket(), msg);
+        return;
+    }
+    topic(client, chlist[0]->getName(), new_topic);
 }
 
 void TopicCommand::topic(Client &client, const std::string &channel_name, const std::string &new_topic)
@@ -69,6 +76,12 @@ void TopicCommand::topic(Client &client, const std::string &channel_name, const 
 
     if (!channel)
     {
+        // Debug: list available channels
+        std::cout << "[DEBUG] TOPIC: requested '" << channel_name << "'. Available channels:";
+        for (size_t j = 0; j < channels_->size(); ++j)
+            std::cout << " '" << (*channels_)[j].getName() << "'";
+        std::cout << std::endl;
+
         std::string msg = ":localhost 403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
         send_all(client.getFdSocket(), msg);
         return;
@@ -97,4 +110,6 @@ void TopicCommand::topic(Client &client, const std::string &channel_name, const 
     }
 
     channel->setTopic(new_topic, client);
+    // Définit le topic du channel. `parseTopic` supprime déjà les ':' initiaux
+    // donc on transmet directement le topic nettoyé au channel.
 }

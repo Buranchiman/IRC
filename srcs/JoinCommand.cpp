@@ -90,7 +90,10 @@ void JoinCommand::join(Client &client, const std::string &channel_name, const st
             const std::vector<Client*> &members = it->getMembers();
             for (unsigned long i = 0; i < members.size(); ++i)
             {
-                namesList += members[i]->getNickName();
+                if (it->isOperator(*members[i]))
+                    namesList += "@" + members[i]->getNickName();
+                else
+                    namesList += members[i]->getNickName();
                 if (i < members.size() - 1)
                     namesList += " ";
             }
@@ -108,6 +111,7 @@ void JoinCommand::join(Client &client, const std::string &channel_name, const st
     std::string normalized_name = channel_name;
     if (normalized_name.empty() == false && normalized_name[0] != '#')
         normalized_name = std::string("#") + normalized_name;
+    // Normalisation du nom du channel pour utiliser une forme canonique avec '#'
     channels_->push_back(Channel(normalized_name, "")); // pas de topic par défaut
     Channel &created = channels_->back();
 
@@ -118,15 +122,28 @@ void JoinCommand::join(Client &client, const std::string &channel_name, const st
     created.addOperator(client); // le créateur devient op
     created.removeInvite(client);
 
-    std::string joinMsg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channel_name + "\r\n";
+    // Utiliser normalized_name pour les messages afin de garantir la présence du '#'
+    std::string joinMsg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + normalized_name + "\r\n";
     send_all(client.getFdSocket(), joinMsg);
 
-    std::string noTopic = ":localhost 331 " + client.getNickName() + " " + channel_name + " :No topic is set\r\n";
+    std::string noTopic = ":localhost 331 " + client.getNickName() + " " + normalized_name + " :No topic is set\r\n";
     send_all(client.getFdSocket(), noTopic);
 
-    std::string namesList = ":localhost 353 " + client.getNickName() + " = " + channel_name + " :@" + client.getNickName() + "\r\n";
+    // construire la liste NAMES en marquant les opérateurs avec '@'
+    std::string namesList = ":localhost 353 " + client.getNickName() + " = " + normalized_name + " :";
+    const std::vector<Client*> &membersCreated = created.getMembers();
+    for (unsigned long i = 0; i < membersCreated.size(); ++i)
+    {
+        if (created.isOperator(*membersCreated[i]))
+            namesList += "@" + membersCreated[i]->getNickName();
+        else
+            namesList += membersCreated[i]->getNickName();
+        if (i < membersCreated.size() - 1)
+            namesList += " ";
+    }
+    namesList += "\r\n";
     send_all(client.getFdSocket(), namesList);
 
-    std::string endNames = ":localhost 366 " + client.getNickName() + " " + channel_name + " :End of NAMES list\r\n";
+    std::string endNames = ":localhost 366 " + client.getNickName() + " " + normalized_name + " :End of NAMES list\r\n";
     send_all(client.getFdSocket(), endNames);
 }
