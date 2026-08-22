@@ -18,10 +18,10 @@
 class TopicCommand : public Command
 {
 private:
-	std::vector<Channel> *channels_;
+	std::vector<Channel *> &channels_;
 
 public:
-	TopicCommand(std::vector<Channel> &channels);
+	TopicCommand(std::vector<Channel *> &channels);
 	~TopicCommand();
 	
 	/**

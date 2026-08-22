@@ -18,11 +18,11 @@
 class Who: public Command
 {
 private:
-	std::vector<Client *> *clients_;
-	std::vector<Channel> *channels_;
+	std::vector<Client *> &clients_;
+	std::vector<Channel *> &channels_;
 
 public:
-	Who(std::vector<Client *> &clients, std::vector<Channel> &channels);
+	Who(std::vector<Client *> &clients, std::vector<Channel *> &channels);
 	~Who();
 
 	/**

@@ -14,8 +14,8 @@
 #include "../includes/Commande.hpp"
 #include <unistd.h>
 
-KickCommand::KickCommand(std::vector<Channel> &channels)
-	: channels_(&channels)
+KickCommand::KickCommand(std::vector<Channel *> &channels)
+	: channels_(channels)
 {
 }
 
@@ -37,13 +37,14 @@ void KickCommand::execute(Client &client, const std::string &args)
 void KickCommand::kick(Client &client, const std::string &target_name, const std::string &reason)
 {
 	bool found_shared = false;
-	for (size_t i = 0; i < channels_->size(); ++i)
+	for (size_t i = 0; i < channels_.size(); ++i)
 	{
-		Channel &ch = (*channels_)[i];
+		if (!channels_[i])
+			continue;
+		Channel &ch = *channels_[i];
 		Client *t = ch.findClientByNickname(target_name);
 		if (t)
 		{
-			// target is in this channel
 			Client *c = ch.findClientByNickname(client.getNickName());
 			if (c)
 			{
@@ -69,11 +70,11 @@ void KickCommand::kick(Client &client, const std::string &target_name, const std
 void KickCommand::kick(Client &client, const std::string &channel_name, const std::string &target_name, const std::string &reason)
 {
 	Channel *channel = NULL;
-	for (size_t i = 0; i < channels_->size(); ++i)
+	for (size_t i = 0; i < channels_.size(); ++i)
 	{
-		if ((*channels_)[i].getName() == channel_name)
+		if (channels_[i] && channels_[i]->getName() == channel_name)
 		{
-			channel = &(*channels_)[i];
+			channel = channels_[i];
 			break;
 		}
 	}

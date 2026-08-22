@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/08/21 15:09:43 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #include <iostream>
 #include <unistd.h>
 
-PrivMsg::PrivMsg(std::vector<Client *> &clients, std::vector<Channel> &channels)
-	: clients_(&clients), channels_(&channels)
+PrivMsg::PrivMsg(std::vector<Client *> &clients, std::vector<Channel *> &channels)
+	: clients_(clients), channels_(channels)
 {
 }
 
@@ -30,8 +30,6 @@ void PrivMsg::execute(Client &client, const std::string &args)
 
 void PrivMsg::message(Client &client, const std::string &msg)
 {
-	if (!channels_ || !clients_)
-		return;
 	std::string args = msg;
 	while (!args.empty() && args[0] == ' ')
 		args.erase(0, 1);
@@ -62,11 +60,11 @@ void PrivMsg::message(Client &client, const std::string &msg)
 	{
 		Channel *channel = NULL;
 		// Find channel in global channels_ list
-		for (size_t i = 0; i < channels_->size(); ++i)
+		for (size_t i = 0; i < channels_.size(); ++i)
 		{
-			if ((*channels_)[i].getName() == target)
+			if (channels_[i] && channels_[i]->getName() == target)
 			{
-				channel = &(*channels_)[i];
+				channel = channels_[i];
 				break;
 			}
 		}
@@ -87,7 +85,7 @@ void PrivMsg::message(Client &client, const std::string &msg)
 		channel->msgEveryone(client, "PRIVMSG " + target + " :" + message);
 		return;
 	}
-	Client *recipient = findClientByNickname(*clients_, target);
+	Client *recipient = findClientByNickname(clients_, target);
 	if (!recipient)
 	{
 		std::string err = ":localhost 401 " + client.getNickName() + " " + target + " :No such nick/channel\r\n";

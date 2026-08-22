@@ -76,17 +76,7 @@ int main(int argc, char *argv[])
      std::vector<pollfd> fds;
      int n;
      std::vector<Client *> client;
-     std::vector<Channel> channels;
-
-	 client.reserve(maxClients);
-	 channels.reserve(20);
-
-
-     channels.push_back(Channel("test", "Just a test channel"));
-     channels.push_back(Channel("students", "a channel dedicated to exchanging between students"));
-
-	channels.push_back(Channel("#test", "Just a test channel"));
-	channels.push_back(Channel("#students", "a channel dedicated to exchanging between students"));
+     std::vector<Channel *> channels;
 
 	Commande commande(client, channels);
 

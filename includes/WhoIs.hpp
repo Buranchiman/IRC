@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WhoIs.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 16:04:19 by buranchiman       #+#    #+#             */
-/*   Updated: 2026/05/26 16:11:54 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@
 class WhoIs: public Command
 {
 private:
-	std::vector<Client *> *clients_;
-	std::vector<Channel> *channels_;
+	std::vector<Client *> &clients_;
+	std::vector<Channel *> &channels_;
 
 public:
-	WhoIs(std::vector<Client *> &clients, std::vector<Channel> &channels);
+	WhoIs(std::vector<Client *> &clients, std::vector<Channel *> &channels);
 	~WhoIs();
 
 	/**

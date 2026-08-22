@@ -33,10 +33,10 @@ struct AppliedMode
 class ModeCommand : public Command
 {
 private:
-	std::vector<Channel> *channels_;
+	std::vector<Channel *> &channels_;
 
 public:
-	ModeCommand(std::vector<Channel> &channels);
+	ModeCommand(std::vector<Channel *> &channels);
 	~ModeCommand();
 
 	/**

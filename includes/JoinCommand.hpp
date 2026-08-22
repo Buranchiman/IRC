@@ -18,10 +18,10 @@
 class JoinCommand : public Command
 {
 private:
-	std::vector<Channel> *channels_;
+	std::vector<Channel *> &channels_;
 
 public:
-	JoinCommand(std::vector<Channel> &channels);
+	JoinCommand(std::vector<Channel *> &channels);
 	~JoinCommand();
 
 	/**

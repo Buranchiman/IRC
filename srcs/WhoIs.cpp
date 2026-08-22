@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   WhoIs.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 16:12:08 by buranchiman       #+#    #+#             */
-/*   Updated: 2026/05/28 10:17:40 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WhoIs.hpp"
 
-WhoIs::WhoIs(std::vector<Client *> &clients, std::vector<Channel> &channels)
-	: clients_(&clients), channels_(&channels)
+WhoIs::WhoIs(std::vector<Client *> &clients, std::vector<Channel *> &channels)
+	: clients_(clients), channels_(channels)
 {
 }
 
@@ -25,7 +25,7 @@ void WhoIs::execute(Client &client, const std::string &args)
 {
     std::string target = args;
 
-    Client *found = findClientByNickname(*clients_, target);
+    Client *found = findClientByNickname(clients_, target);
 
 	std::cout << "entered whois" << std::endl;
     if (!found)

@@ -35,7 +35,7 @@ std::string parseCommandArg(const std::string &line, const std::string &prefix, 
 	return args;
 }
 
-void handleJoinCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+void handleJoinCommand(Client &client, const std::string &line, std::vector<Channel *> &channels)
 {
 	std::string args;
 	parseCommandArg(line, "JOIN ", args);
@@ -44,7 +44,7 @@ void handleJoinCommand(Client &client, const std::string &line, std::vector<Chan
 	cmd.execute(client, args);
 }
 
-void handleKickCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+void handleKickCommand(Client &client, const std::string &line, std::vector<Channel *> &channels)
 {
 	std::string args;
 	parseCommandArg(line, "KICK ", args);
@@ -53,7 +53,7 @@ void handleKickCommand(Client &client, const std::string &line, std::vector<Chan
 	cmd.execute(client, args);
 }
 
-void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
+void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel *> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "INVITE ", args);
@@ -62,7 +62,7 @@ void handleInviteCommand(Client &client, const std::string &line, std::vector<Ch
 	cmd.execute(client, args);
 }
 
-void handleTopicCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+void handleTopicCommand(Client &client, const std::string &line, std::vector<Channel *> &channels)
 {
 	std::string args;
 	parseCommandArg(line, "TOPIC ", args);
@@ -71,7 +71,7 @@ void handleTopicCommand(Client &client, const std::string &line, std::vector<Cha
 	cmd.execute(client, args);
 }
 
-void handleModeCommand(Client &client, const std::string &line, std::vector<Channel> &channels)
+void handleModeCommand(Client &client, const std::string &line, std::vector<Channel *> &channels)
 {
 	std::string args;
 	parseCommandArg(line, "MODE ", args);
@@ -109,7 +109,7 @@ void handleCapCommand(Client &client, const std::string &line)
 	}
 }
 
-void handleMessageCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
+void handleMessageCommand(Client &client, const std::string &line, std::vector<Channel *> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "PRIVMSG ", args);
@@ -117,7 +117,7 @@ void handleMessageCommand(Client &client, const std::string &line, std::vector<C
 	cmd.execute(client, args);
 }
 
-void handleWhoIsCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
+void handleWhoIsCommand(Client &client, const std::string &line, std::vector<Channel *> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "WHOIS ", args);
@@ -125,7 +125,7 @@ void handleWhoIsCommand(Client &client, const std::string &line, std::vector<Cha
 	cmd.execute(client, args);
 }
 
-void handleWhoCommand(Client &client, const std::string &line, std::vector<Channel> &channels, std::vector<Client *> &clients)
+void handleWhoCommand(Client &client, const std::string &line, std::vector<Channel *> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "WHO ", args);
@@ -135,7 +135,7 @@ void handleWhoCommand(Client &client, const std::string &line, std::vector<Chann
 
 void handleCommand(Client &client, const std::string &line, Commande &commande)
 {
-	std::vector<Channel> &channels = *commande.getChannels();
+	std::vector<Channel *> &channels = commande.getChannels();
 	std::vector<Client *> &clients = commande.getClients();
 
 	// Handle commands that can be sent anytime (before JOIN)

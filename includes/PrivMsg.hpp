@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PrivMsg.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:28:07 by wivallee          #+#    #+#             */
-/*   Updated: 2026/05/21 11:13:32 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@
 class PrivMsg: public Command
 {
 private:
-	std::vector<Client *> *clients_;
-	std::vector<Channel> *channels_;
+	std::vector<Client *> &clients_;
+	std::vector<Channel *> &channels_;
 
 public:
-	PrivMsg(std::vector<Client *> &clients, std::vector<Channel> &channels);
+	PrivMsg(std::vector<Client *> &clients, std::vector<Channel *> &channels);
 	~PrivMsg();
 
 	/**

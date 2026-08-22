@@ -24,8 +24,8 @@ std::string intToString(int value)
     return oss.str();
 }
 
-ModeCommand::ModeCommand(std::vector<Channel> &channels)
-	: channels_(&channels)
+ModeCommand::ModeCommand(std::vector<Channel *> &channels)
+	: channels_(channels)
 {
 }
 
@@ -111,11 +111,11 @@ void ModeCommand::modePrepare(Client &client, const std::string channelName, con
 void ModeCommand::mode(Client &client, const std::string &channel_name, const std::string &mode_str, const std::string &args)
 {
 	Channel *channel = NULL;
-	for (size_t i = 0; i < channels_->size(); ++i)
+	for (size_t i = 0; i < channels_.size(); ++i)
 	{
-		if ((*channels_)[i].getName() == channel_name)
+		if (channels_[i] && channels_[i]->getName() == channel_name)
 		{
-			channel = &(*channels_)[i];
+			channel = channels_[i];
 			break;
 		}
 	}

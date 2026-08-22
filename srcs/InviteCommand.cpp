@@ -15,8 +15,8 @@
 #include <iostream>
 #include <unistd.h>
 
-InviteCommand::InviteCommand(std::vector<Channel> &channels, std::vector<Client *> &clients)
-	: channels_(&channels), clients_(clients)
+InviteCommand::InviteCommand(std::vector<Channel *> &channels, std::vector<Client *> &clients)
+	: channels_(channels), clients_(clients)
 {
 }
 
@@ -73,11 +73,11 @@ void InviteCommand::invite(Client &client, const std::string &target_name)
 void InviteCommand::invite(Client &client, const std::string &channel_name, const std::string &target_name)
 {
 	Channel *channel = NULL;
-	for (size_t i = 0; i < channels_->size(); ++i)
+	for (size_t i = 0; i < channels_.size(); ++i)
 	{
-		if ((*channels_)[i].getName() == channel_name)
+		if (channels_[i] && channels_[i]->getName() == channel_name)
 		{
-			channel = &(*channels_)[i];
+			channel = channels_[i];
 			break;
 		}
 	}

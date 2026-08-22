@@ -18,10 +18,10 @@
 class KickCommand : public Command
 {
 private:
-	std::vector<Channel> *channels_;
+	std::vector<Channel *> &channels_;
 
 public:
-	KickCommand(std::vector<Channel> &channels);
+	KickCommand(std::vector<Channel *> &channels);
 	~KickCommand();
 
 	/**

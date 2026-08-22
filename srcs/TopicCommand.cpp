@@ -15,8 +15,8 @@
 #include <iostream>
 #include <unistd.h>
 
-TopicCommand::TopicCommand(std::vector<Channel> &channels)
-	: channels_(&channels)
+TopicCommand::TopicCommand(std::vector<Channel *> &channels)
+	: channels_(channels)
 {
 }
 
@@ -65,11 +65,11 @@ void TopicCommand::topic(Client &client, const std::string &new_topic)
 void TopicCommand::topic(Client &client, const std::string &channel_name, const std::string &new_topic)
 {
     Channel *channel = NULL;
-    for (size_t i = 0; i < channels_->size(); ++i)
+    for (size_t i = 0; i < channels_.size(); ++i)
     {
-        if ((*channels_)[i].getName() == channel_name)
+        if (channels_[i] && channels_[i]->getName() == channel_name)
         {
-            channel = &(*channels_)[i];
+            channel = channels_[i];
             break;
         }
     }
@@ -78,8 +78,9 @@ void TopicCommand::topic(Client &client, const std::string &channel_name, const 
     {
         // Debug: list available channels
         std::cout << "[DEBUG] TOPIC: requested '" << channel_name << "'. Available channels:";
-        for (size_t j = 0; j < channels_->size(); ++j)
-            std::cout << " '" << (*channels_)[j].getName() << "'";
+        for (size_t j = 0; j < channels_.size(); ++j)
+            if (channels_[j])
+                std::cout << " '" << channels_[j]->getName() << "'";
         std::cout << std::endl;
 
         std::string msg = ":localhost 403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";

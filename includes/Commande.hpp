@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 14:27:31 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/08/21 14:54:19 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,14 @@ class Commande
 {
 private:
 	std::vector<Client*> &clients_;
-	std::vector<Channel> *channels_;
+	std::vector<Channel*> &channels_;
 
 public:
-	Commande(std::vector<Client *> &clients, std::vector<Channel> &channels)
-		: clients_(clients), channels_(&channels) {}
+	Commande(std::vector<Client *> &clients, std::vector<Channel *> &channels);
 	~Commande() {}
 
 	std::vector<Client *> &getClients() { return clients_; }
-	std::vector<Channel>* getChannels() { return channels_; }
+	std::vector<Channel*> &getChannels() { return channels_; }
 };
 
 /**
