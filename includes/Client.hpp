@@ -22,6 +22,7 @@ private:
 	bool		welcomeSent_;
 	bool		registered_;
 	int 		fdSocket_;
+	bool		hasPassword_;
 	std::vector<Channel *>		channels_;
 public:
 	Client();
@@ -34,6 +35,7 @@ public:
 	void setUserName(std::string userName);
 	void setNickName(std::string nickName);
 	void setReading(bool opt);
+	void setPassword(bool status);
 	void reset();
 	void initialize(int fdSocket, const char *userName);
 	void addChannel(Channel *channel);
@@ -54,6 +56,7 @@ public:
 	bool gethasCapStart_() const;
 	bool gethasCapEnd_() const;
 	bool getregistered_() const;
+	bool getPasswordStatus_() const;
 	std::string getInput() const;
 	std::vector<Channel *> &getChannels();
 

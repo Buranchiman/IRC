@@ -90,13 +90,13 @@ int main(int argc, char *argv[])
 
 	Commande commande(client, channels);
 
-	if (argc < 2)
+	if (argc < 3)
 	{
-		fprintf(stderr, "ERROR, no port provided\n");
+		fprintf(stderr, "ERROR, incorrect number of arguments\n");
 		exit(1);
 	}
 
-	Serveur serveur(atoi(argv[1]), maxClients);
+	Serveur serveur(atoi(argv[1]), argv[2], maxClients);
 	serveur.initialize();
 
 	sockfd = serveur.getSockFd();
@@ -155,7 +155,6 @@ int main(int argc, char *argv[])
 							i--;
 						continue;
 					}
-
 					if (n == 0)
 					{
 						std::cout << "i is at " << i << '\n';
@@ -167,7 +166,6 @@ int main(int argc, char *argv[])
 							i--;
 						continue;
 					}
-
 					std::string &clientBuffer = client[i - 1]->accessBuffer();
 					clientBuffer += std::string(buffer, n);
                     size_t pos;
@@ -176,7 +174,7 @@ int main(int argc, char *argv[])
                         std::string line = clientBuffer.substr(0, pos);
                         clientBuffer.erase(0, pos + 1);
                         trim(line);
-						std::cout << "line is " << line << std::endl;
+						std::cout << "line is " << line  << " and index is i=" << (i) << std::endl;
 						if (!line.empty())
 						{
 						// Removed slow cout for performance
@@ -196,7 +194,7 @@ int main(int argc, char *argv[])
 								std::string nick = line.substr(5);
 								if (findClientByNickname(client, nick))
 								{
-									send_all(client[i - 1]->getFdSocket(), ":localhost 433 " + nick + " :Nickname is already in use");
+									send_all(client[i - 1]->getFdSocket(), ":localhost 433 " + nick + " :Nickname is already in use\r\n");
 									handleClientDisconnection(fds, client, i - 1);
 									break;
 								}
@@ -218,8 +216,22 @@ int main(int argc, char *argv[])
 								client[i - 1]->setCapEnd(true);
 								isAuth = true;
 							}
+							if (!client[i - 1]->getPasswordStatus_() && line.find("PASS ") == 0)
+							{
+								std::string pass = line.substr(5);
+								if (pass == serveur.getPassword())
+									client[i - 1]->setPassword(true);
+								else
+								{
+									std::cout << "[DEBUG] wrong pasword and password used is " << pass <<std::endl;
+									send_all(client[i - 1]->getFdSocket(), ":localhost 464 * :Password incorrect\r\n");
+									handleClientDisconnection(fds, client, i - 1);
+									break;
+								}
+								isAuth = true;
+							}
 							// Send welcome after NICK and USER are both set (only once)
-							if (!client[i - 1]->getwelcomeSent_Status() && client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus())
+							if (!client[i - 1]->getwelcomeSent_Status() && client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && client[i - 1]->getPasswordStatus_())
 							{
 								sendWelcome(client[i - 1]);
 								client[i - 1]->setwelcomeSent_(true);
@@ -236,7 +248,7 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
-									send_all(client[i - 1]->getFdSocket(), "451\r\n");
+									send_all(client[i - 1]->getFdSocket(), ":localhost 451 * :You have not registered\r\n");
 								}
 							}
 						}
@@ -245,6 +257,5 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
 	return 0;
 }

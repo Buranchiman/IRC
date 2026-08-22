@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/01 16:30:30 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/08/21 14:59:36 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/22 16:02:13 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void trim(std::string &s)
     }
 }
 
-Client::Client(): userName_(""), nickName_(""), pendingInput_(""), hasUsername_(false), hasNickname_(false), hasCapStart_(false), hasCapEnd_(false), welcomeSent_(false), registered_(false), fdSocket_(-2), channels_()
+Client::Client(): userName_(""), nickName_(""), pendingInput_(""), hasUsername_(false), hasNickname_(false), hasCapStart_(false), hasCapEnd_(false), welcomeSent_(false), registered_(false), fdSocket_(-2), hasPassword_(false), channels_()
 {
 	// std::cout << "Constructor Client" << std::endl;
 }
@@ -42,8 +42,14 @@ Client &Client::operator=(const Client &other)
 		this->fdSocket_ = other.fdSocket_;
 		this->hasUsername_ = other.hasUsername_;
 		this->hasNickname_ = other.hasNickname_;
+		this->hasCapStart_ = other.hasCapStart_;
+		this->hasCapEnd_ = other.hasCapEnd_ ;
 		this->welcomeSent_ = other.welcomeSent_;
+		this->registered_ = other.registered_;
+		this->fdSocket_ = other.fdSocket_ ;
+		this->hasPassword_ = other.hasPassword_;
 		this->channels_ = other.channels_;
+
 	}
 	return (*this);
 }
@@ -156,6 +162,11 @@ bool		Client::getregistered_() const
 	return (registered_);
 }
 
+bool Client::getPasswordStatus_() const
+{
+	return (hasPassword_);
+}
+
 std::string &Client::accessBuffer()
 {
 	return (pendingInput_);
@@ -209,6 +220,11 @@ void Client::setCapEnd(bool status)
 	hasCapEnd_ = status;
 }
 
+void Client::setPassword(bool status)
+{
+	hasPassword_ = status;
+}
+
 // void	Client::writeOnTerm(std::string message)
 // {
 // 	if (channels_.size() > 0)
@@ -258,6 +274,6 @@ void send_all(int fd, const std::string &msg)
 
 void Client::checkRegistration(void)
 {
-	if (hasUsername_ && hasNickname_ && hasCapEnd_ && hasCapStart_ && welcomeSent_)
+	if (hasCapEnd_ && hasCapStart_ && welcomeSent_)
 		registered_ = true;
 }

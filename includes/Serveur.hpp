@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Serveur.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: buranchiman <buranchiman@student.42.fr>    +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 14:33:43 by luciendacun       #+#    #+#             */
-/*   Updated: 2026/04/27 14:34:23 by buranchiman      ###   ########.fr       */
+/*   Updated: 2026/08/22 16:02:36 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <netinet/in.h>
 #include <vector>
 #include <signal.h>
+#include <string>
 
 class Serveur
 {
@@ -26,10 +27,10 @@ private:
 	struct sockaddr_in	_serv_addr;
 	struct sockaddr_in	_cli_addr;
 	int					_maxClients;
-
+	std::string			_password;
 public:
 	Serveur();
-	Serveur(int portno, int maxClients);
+	Serveur(int portno, std::string password, int maxClients);
 	Serveur(const Serveur &other);
 	Serveur &operator=(const Serveur &other);
 	~Serveur();
@@ -41,5 +42,6 @@ public:
 	const pollfd		*getFds() const;
 	socklen_t			&getCliLen();
 	struct sockaddr_in	&getCliAddr();
+	std::string			getPassword() const;
 };
 

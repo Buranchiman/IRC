@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 00:00:00 by copilot           #+#    #+#             */
-/*   Updated: 2026/05/14 14:54:27 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/22 15:45:41 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,12 @@ Serveur::Serveur()
 	std::memset(&_cli_addr, 0, sizeof(_cli_addr));
 }
 
-Serveur::Serveur(int portno, int maxClients)
+Serveur::Serveur(int portno, std::string password, int maxClients)
 :	_sockfd(-1),
 	_portno(portno),
 	_clilen(0),
-	_maxClients(maxClients)
+	_maxClients(maxClients),
+	_password(password)
 {
 	std::memset(&_serv_addr, 0, sizeof(_serv_addr));
 	std::memset(&_cli_addr, 0, sizeof(_cli_addr));
@@ -116,4 +117,9 @@ socklen_t	&Serveur::getCliLen()
 struct sockaddr_in	&Serveur::getCliAddr()
 {
 	return (_cli_addr);
+}
+
+std::string	Serveur::getPassword() const
+{
+	return (_password);
 }
