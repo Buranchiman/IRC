@@ -24,23 +24,9 @@ public:
 	JoinCommand(std::vector<Channel *> &channels);
 	~JoinCommand();
 
-	/**
-	 * @brief Execute JOIN command - Add client to a channel
-	 *
-	 * @param client Client requesting to join
-	 * @param args Arguments (format: "channel_name [password]")
-	 * @return void
-	 */
 	void execute(Client &client, const std::string &args);
 
 private:
-	/**
-	 * @brief Internal logic for joining a channel
-	 *
-	 * @param client Client requesting to join
-	 * @param channel_name Name of the channel to join
-	 * @param key Password for the channel (if protected)
-	 * @return void
-	 */
+
 	void join(Client &client, const std::string &channel_name, const std::string &key);
 };

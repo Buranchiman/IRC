@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Channel.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/23 14:50:42 by luda-cun          #+#    #+#             */
+/*   Updated: 2026/08/23 14:51:01 by luda-cun         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef Channel_HPP
 #define Channel_HPP
 
@@ -30,15 +42,12 @@ public:
 	void	join(Client &client);
 	void	msgEveryone(Client &sender, std::string msg);
 
-	//pour quitter un channel il faut que le c,lien soit dans le chanel
 	void	leave(Client &client);
 	void	broadcastToAll(std::string msg);
 
-	// Topic management
 	void setTopic(std::string const &topic, Client &client);
 	void sendTopic(Client &client);
 
-	// Mode management
 	void setTopicRestricted(bool mode);
 	bool isTopicRestricted() const;
 	void setInviteOnly(bool mode);
@@ -53,18 +62,15 @@ public:
 	int getUserLimit() const;
 	bool isUserLimitReached() const;
 
-	// Operator management
 	bool isOperator(Client &client);
 	void addOperator(Client &client);
 	void removeOperator(Client &client);
 	Client* findClientByNickname(std::string const &nickname);
 
-	// Invite management
 	bool isInvited(Client &client);
 	void addInvite(Client &client);
 	void removeInvite(Client &client);
 
-	// ajout commande
 	std::string const	&getName() const;
 	std::string const	&getTopic() const;
 	const std::vector<Client*> &getMembers() const;

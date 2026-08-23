@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Serveur.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/05 00:00:00 by copilot           #+#    #+#             */
-/*   Updated: 2026/08/22 15:45:41 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/23 14:49:28 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,6 @@ void	Serveur::initialize()
 		perror("ERROR opening socket");
 		exit(1);
 	}
-	
-	// Allow immediate reuse of the port (fix TIME_WAIT delay on restart)
 	int reuse = 1;
 	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0)
 	{

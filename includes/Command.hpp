@@ -17,23 +17,11 @@
 
 class Channel;
 
-/**
- * @brief Abstract base class for IRC commands
- * 
- * All IRC commands inherit from this class and implement the execute method
- */
 class Command
 {
 public:
 	virtual ~Command() {}
 	
-	/**
-	 * @brief Execute the command
-	 * 
-	 * @param client The client executing the command
-	 * @param args The arguments passed to the command
-	 * @return void
-	 */
 	virtual void execute(Client &client, const std::string &args) = 0;
 };
 

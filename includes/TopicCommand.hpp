@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   TopicCommand.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lucien <lucien@student.42.fr>              +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/05 00:00:00 by lucien           #+#    #+#             */
-/*   Updated: 2026/05/05 00:00:00 by lucien          ###   ########.fr       */
+/*   Created: 2026/08/23 14:53:42 by luda-cun          #+#    #+#             */
+/*   Updated: 2026/08/23 14:53:44 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #pragma once
 #include <vector>
@@ -23,14 +24,7 @@ private:
 public:
 	TopicCommand(std::vector<Channel *> &channels);
 	~TopicCommand();
-	
-	/**
-	 * @brief Execute TOPIC command - Set or view channel topic
-	 * 
-	 * @param client Client setting the topic
-	 * @param args Arguments (format: "[:topic_text]")
-	 * @return void
-	 */
+
 	void execute(Client &client, const std::string &args);
 	
 

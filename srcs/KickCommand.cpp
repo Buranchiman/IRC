@@ -3,19 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   KickCommand.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lucien <lucien@student.42.fr>              +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/05 00:00:00 by lucien           #+#    #+#             */
-/*   Updated: 2026/05/05 00:00:00 by lucien          ###   ########.fr       */
+/*   Created: 2026/08/23 14:48:45 by luda-cun          #+#    #+#             */
+/*   Updated: 2026/08/23 15:23:14 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/KickCommand.hpp"
+
+
 #include "../includes/Commande.hpp"
+#include "../includes/KickCommand.hpp"
 #include <unistd.h>
 
-KickCommand::KickCommand(std::vector<Channel *> &channels)
-	: channels_(channels)
+KickCommand::KickCommand(std::vector<Channel *> &channels) : channels_(channels)
 {
 }
 
@@ -27,82 +28,92 @@ void KickCommand::execute(Client &client, const std::string &args)
 {
 	std::string target, reason;
 	parseKick(args, target, reason);
-
 	if (!target.empty())
 	{
 		kick(client, target, reason);
 	}
 }
 
-void KickCommand::kick(Client &client, const std::string &target_name, const std::string &reason)
+void KickCommand::kick(Client &client, const std::string &target_name,
+	const std::string &reason)
 {
-	bool found_shared = false;
+	bool	found_shared;
+	Client	*t;
+	Client	*c;
+
+	found_shared = false;
 	for (size_t i = 0; i < channels_.size(); ++i)
 	{
 		if (!channels_[i])
-			continue;
+			continue ;
 		Channel &ch = *channels_[i];
-		Client *t = ch.findClientByNickname(target_name);
+		t = ch.findClientByNickname(target_name);
 		if (t)
 		{
-			Client *c = ch.findClientByNickname(client.getNickName());
+			c = ch.findClientByNickname(client.getNickName());
 			if (c)
 			{
 				found_shared = true;
 				if (!ch.isOperator(client))
 				{
-					std::string msg = "482 " + client.getNickName() + " " + ch.getName() + " :You're not channel operator\r\n";
-					write(client.getFdSocket(), msg.c_str(), msg.size());
-					return;
+					std::string msg = "482 " + client.getNickName() + " "
+						+ ch.getName() + " :You're not channel operator\r\n";
+					send_all(client.getFdSocket(), msg.c_str());
+					return ;
 				}
 				kick(client, ch.getName(), target_name, reason);
-				return;
+				return ;
 			}
 		}
 	}
 	if (!found_shared)
 	{
-		std::string msg = "441 " + client.getNickName() + " " + target_name + " :They aren't on that channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
+		std::string msg = "441 " + client.getNickName() + " " + target_name
+			+ " :They aren't on that channel\r\n";
+		send_all(client.getFdSocket(), msg.c_str());
 	}
 }
 
-void KickCommand::kick(Client &client, const std::string &channel_name, const std::string &target_name, const std::string &reason)
+void KickCommand::kick(Client &client, const std::string &channel_name,
+	const std::string &target_name, const std::string &reason)
 {
-	Channel *channel = NULL;
+	Channel	*channel;
+	Client	*target;
+
+	channel = NULL;
 	for (size_t i = 0; i < channels_.size(); ++i)
 	{
 		if (channels_[i] && channels_[i]->getName() == channel_name)
 		{
 			channel = channels_[i];
-			break;
+			break ;
 		}
 	}
-	// si le channel n'existe pas, on envoie une erreur au client
 	if (!channel)
 	{
-		std::string msg = "403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
-		return;
+		std::string msg = "403 " + client.getNickName() + " " + channel_name
+			+ " :No such channel\r\n";
+		send_all(client.getFdSocket(), msg.c_str());
+		return ;
 	}
-	// si le client n'est pas opérateur du channel, on envoie une erreur au client
 	if (!channel->isOperator(client))
 	{
-		std::string msg = "482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
-		return;
+		std::string msg = "482 " + client.getNickName() + " " + channel_name
+			+ " :You're not channel operator\r\n";
+		send_all(client.getFdSocket(), msg.c_str());
+		return ;
 	}
-	Client *target = channel->findClientByNickname(target_name);
-	
-	//si le client cible n'est pas dans le channel, on envoie une erreur au client par rapport au nickname
+	target = channel->findClientByNickname(target_name);
 	if (!target)
 	{
-		std::string msg = "401 " + client.getNickName() + " " + target_name + " :No such nick/channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
-		return;
+		std::string msg = "401 " + client.getNickName() + " " + target_name
+			+ " :No such nick/channel\r\n";
+		send_all(client.getFdSocket(), msg.c_str());
+		return ;
 	}
-
-	std::string kick_msg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost KICK " + channel_name + " " + target_name;
+	std::string kick_msg = ":" + client.getNickName() + "!"
+		+ client.getUserName() + "@localhost KICK " + channel_name + " "
+		+ target_name;
 	if (!reason.empty())
 		kick_msg += " :" + reason;
 	kick_msg += "\r\n";
@@ -110,9 +121,7 @@ void KickCommand::kick(Client &client, const std::string &channel_name, const st
 	channel->leave(*target);
 	target->suppChannel(channel);
 	std::string msg = "You have been kicked from " + channel_name + "\r\n";
-	write(target->getFdSocket(), msg.c_str(), msg.size());
+	send_all(target->getFdSocket(), msg.c_str());
 	msg = "Please join a channel using: JOIN #channelname\r\n";
-	write(target->getFdSocket(), msg.c_str(), msg.size());
-
-	// action de kick exécutée : le client a été supprimé du channel et notifié
+	send_all(target->getFdSocket(), msg.c_str());
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PrivMsg.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/23 14:49:14 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,11 +55,9 @@ void PrivMsg::message(Client &client, const std::string &msg)
 		send_all(client.getFdSocket(), err);
 		return;
 	}
-	//c lia jvais de sbug en mode on pouvais envoyer des message meme quand on etait kick
 	if (!target.empty() && target[0] == '#')
 	{
 		Channel *channel = NULL;
-		// Find channel in global channels_ list
 		for (size_t i = 0; i < channels_.size(); ++i)
 		{
 			if (channels_[i] && channels_[i]->getName() == target)
@@ -74,14 +72,12 @@ void PrivMsg::message(Client &client, const std::string &msg)
 			send_all(client.getFdSocket(), err);
 			return;
 		}
-		// Check membership via channel's member list
 		if (!channel->findClientByNickname(client.getNickName()))
 		{
 			std::string err = ":localhost 404 " + client.getNickName() + " " + target + " :Cannot send to channel\r\n";
 			send_all(client.getFdSocket(), err);
 			return;
 		}
-		// Pass the command text (without prefix); Channel::msgEveryone will add the prefix
 		channel->msgEveryone(client, "PRIVMSG " + target + " :" + message);
 		return;
 	}
@@ -92,10 +88,6 @@ void PrivMsg::message(Client &client, const std::string &msg)
 		send_all(client.getFdSocket(), err);
 		return;
 	}
-    // std::string test = ":test!test@localhost PRIVMSG lulu :HELLO\r\n";
-    // send_all(recipient->getFdSocket(), test);
-    // std::string test1 = "PRIVMSG lulu :HELLO\r\n";
-    // send_all(recipient->getFdSocket(), test1);
 	std::cout
 	<< "SEND PRIVMSG FROM=[" << client.getNickName() << "]"
 	<< " TO=[" << target << "]"

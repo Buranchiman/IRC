@@ -3,12 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   ModeCommand.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lucien <lucien@student.42.fr>              +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/05 00:00:00 by lucien           #+#    #+#             */
-/*   Updated: 2026/05/05 00:00:00 by lucien          ###   ########.fr       */
+/*   Created: 2026/08/23 14:48:38 by luda-cun          #+#    #+#             */
+/*   Updated: 2026/08/23 15:23:26 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
 
 #include "../includes/ModeCommand.hpp"
 #include "../includes/Commande.hpp"
@@ -78,7 +80,6 @@ std::string ModeCommand::buildModeBroadcast(const std::string &senderPrefix,
 
 void ModeCommand::broadcastToChannel(Channel &channel, const std::string &msg) const
 {
-	// Adjust getClients()/getMembers() to whatever your Channel class actually exposes
 	std::vector<Client *> members = channel.getMembers();
 	for (size_t i = 0; i < members.size(); ++i)
 		send_all(members[i]->getFdSocket(), msg);
@@ -99,7 +100,7 @@ void ModeCommand::modePrepare(Client &client, const std::string channelName, con
 	if (channel.empty())
 	{
 		std::string msg = "403 " + client.getNickName() + " * :You are not in a channel\r\n";
-		write(client.getFdSocket(), msg.c_str(), msg.size());
+		send_all(client.getFdSocket(), msg.c_str());
 		return;
 	}
 
@@ -168,7 +169,7 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 	std::istringstream iss(args);
 	std::string token;
 	std::vector<std::string> tokens;
-	while (iss >> token) // >> already skips consecutive whitespace
+	while (iss >> token)
     	tokens.push_back(token);
 	size_t argsIndex = 0;
 	std::vector<AppliedMode> applied;
@@ -226,7 +227,6 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 				if (sign)
 				{
 					channel->addOperator(*target);
-					// Notifier le canal du changement de mode
 					std::string modeMsg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost MODE " + channel_name + " +o " + args + "\r\n";
 					channel->broadcastToAll(modeMsg);
 					std::cout << "[" << client.getNickName() << "] MODE +o " << args << std::endl;
@@ -234,7 +234,6 @@ void ModeCommand::mode(Client &client, const std::string &channel_name, const st
 				else
 				{
 					channel->removeOperator(*target);
-					// Notifier le canal du changement de mode
 					std::string modeMsg = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost MODE " + channel_name + " -o " + args + "\r\n";
 					channel->broadcastToAll(modeMsg);
 					std::cout << "[" << client.getNickName() << "] MODE -o " << args << std::endl;

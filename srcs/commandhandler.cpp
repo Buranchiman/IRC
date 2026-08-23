@@ -10,106 +10,89 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-#include <unistd.h>
 #include "../includes/Client.hpp"
 #include "../includes/Commande.hpp"
+#include "../includes/InviteCommand.hpp"
 #include "../includes/JoinCommand.hpp"
 #include "../includes/KickCommand.hpp"
-#include "../includes/InviteCommand.hpp"
-#include "../includes/TopicCommand.hpp"
 #include "../includes/ModeCommand.hpp"
 #include "../includes/PrivMsg.hpp"
+#include "../includes/TopicCommand.hpp"
 #include "../includes/Who.hpp"
 #include "../includes/WhoIs.hpp"
+#include <iostream>
+#include <unistd.h>
 
-std::string parseCommandArg(const std::string &line, const std::string &prefix, std::string &remaining)
+std::string parseCommandArg(const std::string &line, const std::string &prefix,
+	std::string &remaining)
 {
-	size_t start = prefix.length();
-	std::string args = line.substr(start);
+	size_t	start;
 
+	start = prefix.length();
+	std::string args = line.substr(start);
 	while (!args.empty() && args[0] == ' ')
 		args.erase(0, 1);
-
 	remaining = args;
-	return args;
+	return (args);
 }
 
-void handleJoinCommand(Client &client, const std::string &line, std::vector<Channel *> &channels)
+void	handleJoinCommand(Client &client, const std::string &line,
+		std::vector<Channel *> &channels)
 {
 	std::string args;
 	parseCommandArg(line, "JOIN ", args);
-
 	JoinCommand cmd(channels);
 	cmd.execute(client, args);
 }
 
-void handleKickCommand(Client &client, const std::string &line, std::vector<Channel *> &channels)
+void	handleKickCommand(Client &client, const std::string &line,
+		std::vector<Channel *> &channels)
 {
 	std::string args;
 	parseCommandArg(line, "KICK ", args);
-
 	KickCommand cmd(channels);
 	cmd.execute(client, args);
 }
 
-void handleInviteCommand(Client &client, const std::string &line, std::vector<Channel *> &channels, std::vector<Client *> &clients)
+void	handleInviteCommand(Client &client, const std::string &line,
+		std::vector<Channel *> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "INVITE ", args);
-
 	InviteCommand cmd(channels, clients);
 	cmd.execute(client, args);
 }
 
-void handleTopicCommand(Client &client, const std::string &line, std::vector<Channel *> &channels)
+void	handleTopicCommand(Client &client, const std::string &line,
+		std::vector<Channel *> &channels)
 {
 	std::string args;
 	parseCommandArg(line, "TOPIC ", args);
-
 	TopicCommand cmd(channels);
 	cmd.execute(client, args);
 }
 
-void handleModeCommand(Client &client, const std::string &line, std::vector<Channel *> &channels)
+void	handleModeCommand(Client &client, const std::string &line,
+		std::vector<Channel *> &channels)
 {
 	std::string args;
 	parseCommandArg(line, "MODE ", args);
-
 	ModeCommand cmd(channels);
 	cmd.execute(client, args);
 }
 
-void handlePingCommand(Client &client, const std::string &line)
+void	handlePingCommand(Client &client, const std::string &line)
 {
 	std::string args;
 	parseCommandArg(line, "PING ", args);
-
-	// Remove trailing whitespace
 	while (!args.empty() && args[args.length() - 1] == ' ')
 		args.erase(args.length() - 1);
-
 	std::string response = ":localhost PONG " + args + "\r\n";
-	write(client.getFdSocket(), response.c_str(), response.size());
+	send_all(client.getFdSocket(), response.c_str());
 }
 
-void handleCapCommand(Client &client, const std::string &line)
-{
-	std::string args;
-	parseCommandArg(line, "CAP ", args);
-
-	if (args.find("LS") != std::string::npos)
-	{
-		std::string response = "CAP * LS :\r\n";
-		write(client.getFdSocket(), response.c_str(), response.size());
-	}
-	else if (args.find("END") != std::string::npos)
-	{
-		// Removed slow cout
-	}
-}
-
-void handleMessageCommand(Client &client, const std::string &line, std::vector<Channel *> &channels, std::vector<Client *> &clients)
+void	handleMessageCommand(Client &client, const std::string &line,
+		std::vector<Channel *> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "PRIVMSG ", args);
@@ -117,7 +100,8 @@ void handleMessageCommand(Client &client, const std::string &line, std::vector<C
 	cmd.execute(client, args);
 }
 
-void handleWhoIsCommand(Client &client, const std::string &line, std::vector<Channel *> &channels, std::vector<Client *> &clients)
+void	handleWhoIsCommand(Client &client, const std::string &line,
+		std::vector<Channel *> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "WHOIS ", args);
@@ -125,7 +109,8 @@ void handleWhoIsCommand(Client &client, const std::string &line, std::vector<Cha
 	cmd.execute(client, args);
 }
 
-void handleWhoCommand(Client &client, const std::string &line, std::vector<Channel *> &channels, std::vector<Client *> &clients)
+void	handleWhoCommand(Client &client, const std::string &line,
+		std::vector<Channel *> &channels, std::vector<Client *> &clients)
 {
 	std::string args;
 	parseCommandArg(line, "WHO ", args);
@@ -133,22 +118,16 @@ void handleWhoCommand(Client &client, const std::string &line, std::vector<Chann
 	cmd.execute(client, args);
 }
 
-void handleCommand(Client &client, const std::string &line, Commande &commande)
+void	handleCommand(Client &client, const std::string &line,
+		Commande &commande)
 {
 	std::vector<Channel *> &channels = commande.getChannels();
 	std::vector<Client *> &clients = commande.getClients();
-
-	// Handle commands that can be sent anytime (before JOIN)
 	if (line.size() >= 5 && line.substr(0, 5) == "PING ")
 	{
 		handlePingCommand(client, line);
-		return;
+		return ;
 	}
-	// if (line.size() >= 4 && line.substr(0, 4) == "CAP ")
-	// {
-	// 	handleCapCommand(client, line);
-	// 	return;
-	// }
 	else
 	{
 		if (line.size() >= 5 && line.substr(0, 5) == "JOIN ")
@@ -163,8 +142,6 @@ void handleCommand(Client &client, const std::string &line, Commande &commande)
 			handleModeCommand(client, line, channels);
 		else if (line.size() >= 8 && line.substr(0, 8) == "PRIVMSG ")
 		{
-			// Removed slow cout for performance
-			// std::cout << "[" << client.getNickName() << "] Message: " << line << std::endl;
 			handleMessageCommand(client, line, channels, clients);
 		}
 		else if (line.size() >= 6 && line.substr(0, 6) == "WHOIS ")

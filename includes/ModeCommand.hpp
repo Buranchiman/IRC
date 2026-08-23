@@ -24,9 +24,9 @@ enum
 
 struct AppliedMode
 {
-	char        sign;   // '+' or '-'
-	char        letter; // the mode char, e.g. 'o', 'k', 'l', 'i', 't'
-	std::string arg;    // only meaningful if hasArg is true
+	char        sign;   
+	char        letter; 
+	std::string arg;    
 	bool        hasArg;
 };
 
@@ -39,13 +39,6 @@ public:
 	ModeCommand(std::vector<Channel *> &channels);
 	~ModeCommand();
 
-	/**
-	 * @brief Execute MODE command - Change channel modes
-	 *
-	 * @param client Client changing the mode (must be operator)
-	 * @param args Arguments (format: "mode_string [mode_args]")
-	 * @return void
-	 */
 	void execute(Client &client, const std::string &args);
 
 private:

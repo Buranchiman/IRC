@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/23 14:51:13 by luda-cun          #+#    #+#             */
+/*   Updated: 2026/08/23 14:51:29 by luda-cun         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 #include <iostream>
 #include <string>
@@ -13,7 +25,6 @@ class Client
 private:
 	std::string userName_;
 	std::string nickName_;
-	// std::string passWord_;
 	std::string	pendingInput_;
 	bool		hasUsername_;
 	bool		hasNickname_;
@@ -30,7 +41,6 @@ public:
 	Client &operator=(const Client &other);
 	~Client();
 
-	//setter
 	void setFdSocket(int fdSocket);
 	void setUserName(std::string userName);
 	void setNickName(std::string nickName);
@@ -41,12 +51,10 @@ public:
 	void addChannel(Channel *channel);
 	void suppChannel(Channel *channel);
 
-	// void setChannel(Channel *channel);
 	void setwelcomeSent_(bool status);
 	void setCapStart(bool status);
 	void setCapEnd(bool status);
 	void setregistered_(bool status);
-	//getter
 	std::string getUserName() const;
 	std::string getNickName() const;
 	int getFdSocket() const;

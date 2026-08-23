@@ -25,13 +25,7 @@ public:
 	InviteCommand(std::vector<Channel *> &channels, std::vector<Client *> &clients);
 	~InviteCommand();
 
-	/**
-	 * @brief Execute INVITE command - Invite user to channel
-	 *
-	 * @param client Client sending the invitation
-	 * @param args Arguments (format: "target_name")
-	 * @return void
-	 */
+
 	void execute(Client &client, const std::string &args);
 
 private:

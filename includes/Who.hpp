@@ -25,22 +25,8 @@ public:
 	Who(std::vector<Client *> &clients, std::vector<Channel *> &channels);
 	~Who();
 
-	/**
-	 * @brief Execute Who command
-	 *
-	 * @param client Client sending the private message
-	 * @param args Arguments after Who command
-	 * @return void
-	 */
 	void execute(Client &client, const std::string &args);
 
 private:
-	/**
-	 * @brief Internal logic for Who
-	 *
-	 * @param client Client requesting to send the message
-	 * @param msg Raw arguments after Who
-	 * @return void
-	 */
 
 };

@@ -24,13 +24,6 @@ public:
 	KickCommand(std::vector<Channel *> &channels);
 	~KickCommand();
 
-	/**
-	 * @brief Execute KICK command - Remove user from channel
-	 *
-	 * @param client Client performing the kick (must be operator)
-	 * @param args Arguments (format: "target_name [reason]")
-	 * @return void
-	 */
 	void execute(Client &client, const std::string &args);
 
 private:

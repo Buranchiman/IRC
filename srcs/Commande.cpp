@@ -3,17 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Commande.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/28 18:30:00 by githubcopil       #+#    #+#             */
-/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/23 14:38:03 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Commande.hpp"
 
-Commande::Commande(std::vector<Client *> &clients, std::vector<Channel *> &channels)
-	: clients_(clients), channels_(channels)
+Commande::Commande(std::vector<Client *> &clients,
+	std::vector<Channel *> &channels) : clients_(clients), channels_(channels)
 {
 }
-

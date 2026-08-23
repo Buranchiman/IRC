@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   parsecommande.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lucien <lucien@student.42.fr>              +#+  +:+       +#+        */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/05 00:00:00 by lucien           #+#    #+#             */
-/*   Updated: 2026/05/05 00:00:00 by lucien          ###   ########.fr       */
+/*   Created: 2026/08/23 14:48:25 by luda-cun          #+#    #+#             */
+/*   Updated: 2026/08/23 14:48:30 by luda-cun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include "../includes/Commande.hpp"
 
@@ -29,7 +30,6 @@ void parseJoin(const std::string &args, std::string &channelName, std::string &p
 void parseKick(const std::string &args, std::string &target, std::string &reason)
 {
 
-	// Tokenize args by spaces, ignoring leading spaces
 	std::vector<std::string> tokens;
 	size_t pos = 0;
 	while (pos < args.size()) {
@@ -44,7 +44,6 @@ void parseKick(const std::string &args, std::string &target, std::string &reason
 	reason.clear();
 	if (tokens.empty()) return;
 
-	// If first token is a channel name (#...), then next token is the target nickname
 	if (!tokens.empty() && tokens[0].size() > 0 && tokens[0][0] == '#') {
 		if (tokens.size() > 1) target = tokens[1];
 		else return;
@@ -52,7 +51,6 @@ void parseKick(const std::string &args, std::string &target, std::string &reason
 		target = tokens[0];
 	}
 
-	// Reason is remaining tokens after target
 	size_t reasonStart = (tokens[0].size() > 0 && tokens[0][0] == '#') ? 2 : 1;
 	if (tokens.size() > reasonStart) {
 		for (size_t i = reasonStart; i < tokens.size(); ++i) {
@@ -94,24 +92,20 @@ void parseTopic(const std::string &args, std::string &channel_name, std::string 
 
     size_t pos = 0;
 
-    // Ignorer les espaces de début
     while (pos < args.size() && args[pos] == ' ')
         pos++;
 
-    // Extraire le nom du channel (jusqu'au prochain espace ou fin de chaîne)
     size_t start = pos;
     while (pos < args.size() && args[pos] != ' ')
         pos++;
     channel_name = args.substr(start, pos - start);
 
-    // Ignorer les espaces avant le topic
     while (pos < args.size() && args[pos] == ' ')
         pos++;
 
     if (pos < args.size())
     {
         topic = args.substr(pos);
-		// Supprimer tous les ':' initiaux (cas où le client envoie plusieurs ':')
 		while (!topic.empty() && (topic[0] == ':' || topic[0] == ' '))
 			topic.erase(0, 1);
     }

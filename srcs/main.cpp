@@ -1,5 +1,16 @@
-/* A simple server in the internet domain using TCP
-   The port number is passed as an argument */
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/23 14:45:04 by luda-cun          #+#    #+#             */
+/*   Updated: 2026/08/23 14:47:18 by luda-cun         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +33,6 @@ void error(const char *msg)
 	exit(1);
 }
 
-// Forward declarations for handlers
 void handleNewConnection(int sockfd, struct sockaddr_in &cli_addr, socklen_t &clilen,
 						 struct pollfd *fds, std::vector<Client> &clients, int maxClients);
 void handleClientDisconnection(std::vector<pollfd> &fds, std::vector<Client *> &clients, size_t clientIdx);
@@ -46,8 +56,8 @@ void eraseClient(std::vector<Client *> &client, Client *target)
      {
          if (*it == target)
          {
-               delete *it;              // destroy object
-               it = client.erase(it);  // returns next iterator, no need to increment
+               delete *it;
+               it = client.erase(it);
           }
           else
                ++it;
@@ -59,7 +69,6 @@ void sendWelcome(Client *client)
 	std::string nick = client->getNickName();
 	std::string user = client->getUserName();
 	int fd = client->getFdSocket();
-	// Send the standard welcome (RPL 001-005)
 	send_all(fd, ":localhost 001 " + nick + " :Welcome to the IRC Network " + nick + "!" + user + "@localhost\r\n");
 	send_all(fd, ":localhost 002 " + nick + " :Your host is localhost, running IRCv1.0\r\n");
 	send_all(fd, ":localhost 003 " + nick + " :This server was created just now\r\n");
@@ -110,17 +119,12 @@ int main(int argc, char *argv[])
 					int flags = fcntl(fds.back().fd, F_GETFL, 0);
 					fcntl(fds.back().fd, F_SETFL, flags | O_NONBLOCK);
 
-					// Disable Nagle's algorithm for low latency
 					int opt = 1;
 					setsockopt(fds.back().fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
-
-						//check si fd < 0
                     if (fds.back().fd >= 0)
                     {
                          client.push_back(new Client());
                          client.back()->setFdSocket(fds.back().fd);
-                       //   if (client.back()->getChannel() == NULL)
-                       //        std::cout << "client has no channel at creation" << std::endl;
                     }
                }
 
@@ -132,9 +136,6 @@ int main(int argc, char *argv[])
 					printf("recv %i bytes\n", n);
 					if (n < 0)
 					{
-
-						// if (errno != EAGAIN && errno != EWOULDBLOCK)
-						// 	error("ERROR reading from socket");
 						std::cout << "i is at " << i << '\n';
 						std::cerr << strerror(errno) << '\n';
 						std::cout << "destructor Client" << std::endl;
@@ -167,13 +168,9 @@ int main(int argc, char *argv[])
 						std::cout << "line is " << line  << " and index is i=" << (i) << std::endl;
 						if (!line.empty())
 						{
-						// Removed slow cout for performance
-						// std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
-							// Handle IRC protocol commands
 							bool isAuth = false;
 							if (!client[i - 1]->gethasCapStart_() && line.find("CAP LS") == 0)
 							{
-								// Send CAP response immediately
 								std::string cap = ":localhost CAP * LS :\r\n";
 								send_all(client[i - 1]->getFdSocket(), cap);
 								client[i - 1]->setCapStart(true);
@@ -220,13 +217,11 @@ int main(int argc, char *argv[])
 								}
 								isAuth = true;
 							}
-							// Send welcome after NICK and USER are both set (only once)
 							if (!client[i - 1]->getwelcomeSent_Status() && client[i - 1]->getNicknameStatus() && client[i - 1]->getNameStatus() && client[i - 1]->getPasswordStatus_())
 							{
 								sendWelcome(client[i - 1]);
 								client[i - 1]->setwelcomeSent_(true);
 							}
-							// Handle other IRC commands only after auth complete
 							client[i - 1]->checkRegistration();
 							if (!isAuth)
 							{
