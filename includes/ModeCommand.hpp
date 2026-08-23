@@ -49,5 +49,7 @@ private:
                                  const std::string &channelName,
                                  const std::vector<AppliedMode> &applied) const;
 	void broadcastToChannel(Channel &channel, const std::string &msg) const;
+	void modeWithoutParams(Channel *channel, Client &client);
+	bool consumeArg(Client &client, std::vector<std::string> &tokens, size_t &argsIndex, std::string &out);
 };
 

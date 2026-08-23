@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/23 14:29:45 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/08/23 15:15:14 by luda-cun         ###   ########.fr       */
+/*   Updated: 2026/08/23 17:57:56 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,9 +176,6 @@ void Channel::addOperator(Client &client)
 	if (!isOperator(client))
 	{
 		operators_.push_back(&client);
-		std::string notice = ":localhost NOTICE " + client.getNickName()
-			+ " :vous etes op mtn\r\n";
-		send_all(client.getFdSocket(), notice.c_str());
 	}
 }
 

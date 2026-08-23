@@ -62,28 +62,9 @@ void TopicCommand::topic(Client &client, const std::string &new_topic)
 void TopicCommand::topic(Client &client, const std::string &channel_name, const std::string &new_topic)
 {
     Channel *channel = NULL;
-    for (size_t i = 0; i < channels_.size(); ++i)
-    {
-        if (channels_[i] && channels_[i]->getName() == channel_name)
-        {
-            channel = channels_[i];
-            break;
-        }
-    }
-
+    channel = findChannelByName(channel_name, channels_, client);
     if (!channel)
-    {
-        std::cout << "[DEBUG] TOPIC: requested '" << channel_name << "'. Available channels:";
-        for (size_t j = 0; j < channels_.size(); ++j)
-            if (channels_[j])
-                std::cout << " '" << channels_[j]->getName() << "'";
-        std::cout << std::endl;
-
-        std::string msg = ":localhost 403 " + client.getNickName() + " " + channel_name + " :No such channel\r\n";
-        send_all(client.getFdSocket(), msg);
-        return;
-    }
-
+        return ;
     if (!channel->findClientByNickname(client.getNickName()))
     {
         std::string msg = ":localhost 442 " + client.getNickName() + " " + channel_name + " :You're not on that channel\r\n";

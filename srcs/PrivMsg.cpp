@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   PrivMsg.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luda-cun <luda-cun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/08/23 14:49:14 by luda-cun         ###   ########.fr       */
+/*   Updated: 2026/08/23 16:33:11 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,20 +58,9 @@ void PrivMsg::message(Client &client, const std::string &msg)
 	if (!target.empty() && target[0] == '#')
 	{
 		Channel *channel = NULL;
-		for (size_t i = 0; i < channels_.size(); ++i)
-		{
-			if (channels_[i] && channels_[i]->getName() == target)
-			{
-				channel = channels_[i];
-				break;
-			}
-		}
+		channel = findChannelByName(target, channels_, client);
 		if (!channel)
-		{
-			std::string err = ":localhost 403 " + client.getNickName() + " " + target + " :No such channel\r\n";
-			send_all(client.getFdSocket(), err);
-			return;
-		}
+			return ;
 		if (!channel->findClientByNickname(client.getNickName()))
 		{
 			std::string err = ":localhost 404 " + client.getNickName() + " " + target + " :Cannot send to channel\r\n";

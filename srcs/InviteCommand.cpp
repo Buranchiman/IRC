@@ -78,21 +78,9 @@ void InviteCommand::invite(Client &client, const std::string &channel_name,
 	Client	*target;
 
 	channel = NULL;
-	for (size_t i = 0; i < channels_.size(); ++i)
-	{
-		if (channels_[i] && channels_[i]->getName() == channel_name)
-		{
-			channel = channels_[i];
-			break ;
-		}
-	}
+	channel = findChannelByName(channel_name, channels_, client);
 	if (!channel)
-	{
-		std::string msg = "403 " + client.getNickName() + " " + channel_name
-			+ " :No such channel\r\n";
-		send_all(client.getFdSocket(), msg.c_str());
 		return ;
-	}
 	if (!channel->isOperator(client))
 	{
 		std::string msg = "482 " + client.getNickName() + " " + channel_name

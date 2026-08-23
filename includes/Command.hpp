@@ -23,5 +23,6 @@ public:
 	virtual ~Command() {}
 	
 	virtual void execute(Client &client, const std::string &args) = 0;
+	Channel	*findChannelByName(std::string name, std::vector<Channel *> channels_, Client &client);
 };
 
