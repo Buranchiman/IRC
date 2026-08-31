@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 16:12:08 by buranchiman       #+#    #+#             */
-/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/31 15:33:15 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ void Who::execute(Client &client, const std::string &args)
 {
     std::string target = args;
     std::vector<Client *> clients;
-    std::cout << "entered Who" << std::endl;
     for (std::vector<Channel *>::iterator it = channels_.begin(); it != channels_.end(); ++it)
     {
         if (*it && (*it)->getName() == target)
@@ -49,5 +48,4 @@ void Who::execute(Client &client, const std::string &args)
         send_all(client.getFdSocket(), userList);
     }
     send_all(client.getFdSocket(), end);
-    std::cout << "ended Who" <<std::endl;
 }

@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/26 16:12:08 by buranchiman       #+#    #+#             */
-/*   Updated: 2026/08/22 18:09:54 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/31 15:33:36 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ void WhoIs::execute(Client &client, const std::string &args)
 
     Client *found = findClientByNickname(clients_, target);
 
-	std::cout << "entered whois" << std::endl;
     if (!found)
     {
         std::string err =
@@ -67,5 +66,4 @@ void WhoIs::execute(Client &client, const std::string &args)
         " :End of /WHOIS list.\r\n";
 
     send_all(client.getFdSocket(), rpl318);
-    std::cout << "ended whois" <<std::endl;
 }

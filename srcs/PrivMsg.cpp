@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/20 13:30:31 by wivallee          #+#    #+#             */
-/*   Updated: 2026/08/23 16:33:11 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/31 15:33:01 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,13 +77,6 @@ void PrivMsg::message(Client &client, const std::string &msg)
 		send_all(client.getFdSocket(), err);
 		return;
 	}
-	std::cout
-	<< "SEND PRIVMSG FROM=[" << client.getNickName() << "]"
-	<< " TO=[" << target << "]"
-	<< " welcome=" << client.getwelcomeSent_Status()
-	<< " nick_len=" << client.getNickName().size()
-	<< std::endl;
 	std::string out = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost PRIVMSG " + target + " :" + message + "\r\n";
-    std::cout << out << "to " << recipient->getNickName() << std::endl;
 	send_all(recipient->getFdSocket(), out);
 }

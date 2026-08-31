@@ -6,7 +6,7 @@
 /*   By: wivallee <wivallee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/23 14:29:45 by luda-cun          #+#    #+#             */
-/*   Updated: 2026/08/23 17:57:56 by wivallee         ###   ########.fr       */
+/*   Updated: 2026/08/31 15:32:16 by wivallee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,6 @@ void Channel::msgEveryone(Client &sender, std::string msg)
 	{
 		if (clients_[i] != &sender)
 		{
-			std::cout << "name of client is" << clients_[i]->getNickName() << std::endl;
 			send(clients_[i]->getFdSocket(), out.c_str(), out.size(),
 				MSG_NOSIGNAL);
 		}

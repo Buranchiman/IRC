@@ -52,7 +52,6 @@ void	handleClientInput(std::vector<Client> &clients, size_t clientIdx,
 		trim(line);
 		if (!line.empty())
 		{
-			std::cout << "[SERVER] Raw input: '" << line << "'" << std::endl;
 			handleClientLine(client, line, commande);
 		}
 	}
