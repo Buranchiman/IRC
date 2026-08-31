@@ -13,6 +13,7 @@ Created as part of the **42 curriculum** by [luda-cun](https://github.com/Lucien
   - [Build](#build)
   - [Usage](#usage)
 - [What We Learned](#what-we-learned)
+- [Command](#command)
 - [Resources](#resources)
 - [A Note on AI Usage](#a-note-on-ai-usage)
 - [Authors](#authors)
@@ -58,7 +59,25 @@ The server takes two arguments: a **listening port** and a **connection password
 ```
 
 ---
+## Command
 
+```sh
+.JOIN <channels>* [<key>]*
+```
+```sh
+.MODE <channels>* [<argument>]*
+```
+```sh
+.TOPIC <channels>* [<topic>]*
+```
+```sh
+.INVITE <nickname> <channel>
+```
+```sh
+.KICK <channel> <users>* [<comment>]
+```
+
+---
 ## Resources
 
 | RFC | Description |
